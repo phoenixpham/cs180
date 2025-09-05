@@ -207,6 +207,14 @@ video {
   line-height: 1.4;
 }
 
+.gif-small {
+  width: 60%;
+  max-width: 400px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
 /* Tablets */
 @media (max-width: 1024px) {
     .content {
