@@ -67,7 +67,7 @@
                 </section>
             </section>
             <section>
-                <h4>Problems</h4>
+                <h3>Problems</h3>
                 <p>Without cropping, the algorithm often misaligned due to black/white borders and wrap-around effects. I incorporated a 20% border crop to avoid these artifacts and only use the center of the image for alignment.</p>
                 <p>For <code>emir.tif</code>, I needed edge-based preprocessing to handle the strong color differences. To combat this, I implemented a preprocessing step of finding gradient magnitude to produce a "edge detector" map of the image.</p>
                 <p>Initially, alignment took several minutes for <code>.tif</code> images. Moving the cropping outside inner loops and using <code>refine_window</code> at higher resolutions reduced runtime to under a minute.</p>
