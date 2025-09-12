@@ -200,6 +200,28 @@ video {
   text-align: center;
 }
 
+.before-after-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.before, .after {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 45%;
+}
+
+.before img, .after img {
+    width: 100%;
+    height: auto;
+    border-radius: 5px;
+}
+
 .caption {
   font-size: 14px;
   color: #666;
