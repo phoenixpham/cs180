@@ -62,7 +62,7 @@
                         While pyramid + NCC worked well for almost all images, <code>emir.tif</code> was problematic due to its brightly colored blue robe. The robe is very bright in the blue channel but appears much darker in red, misleading intensity-based metrics.
                     </p>
                     <p>
-                        To address this, I implemented a simple edge detector using gradient magnitude (finite differences in <code>x</code> and <code>y</code>). Aligning on edges rather than raw intensities improved alignment, since structural features (e.g., robe outline) are consistent across channels even if brightness is not.
+                        To address this, I implemented a simple edge detector using gradient magnitude (finite differences in <code>x</code> and <code>y</code>). Aligning on edges rather than raw intensities improved alignment, since structural features (e.g., robe outline) are consistent across channels even if brightness is not. Note this preprocessing step worked for all images except <code>icon.tif</code>. This could be due to the many tiny edges/details in the image. 
                     </p>
                 </section>
             </section>
