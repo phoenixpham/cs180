@@ -26,32 +26,51 @@
             <section>
                 <h3>Overview</h3>
                 <p>
-                    The goal of this assignment is to take the digitized Prokudin-Gorskii glass plate images and, using image processing techniques, automatically produce a color image with as few visual artifacts as possible. In order to do this, you will need to extract the three color channel images, place them on top of each other, and align them so that they form a single RGB color image.
+                    The goal of this project is to take digitized Prokudin-Gorskii glass plate images and, using image processing techniques, automatically produce a color image with as few visual artifacts as possible. Each glass plate contains three grayscale exposures (Blue, Green, Red). The task is to extract these channels, align them correctly, and combine them into a single RGB image.
                 </p>
             </section>
             <section>
                 <h3>Approach</h3>
                 <p>
-                    [Your approach here]
+                    Using the provided skeleton Python code, I first imported the images, converted them to floats, and seperated each color channel (by thirds) before alignment. Then, I implemented two main alignment strategies: a naive exhaustive search for smaller images and a pyramid-based coarse-to-fine search for larger images, with additional preprocessing steps to improve alignment on difficult images (e.g., <code>emir.tif</code>'s different color channels). 
                 </p>
                 <section>
                     <h4>Naive Alignment</h4>
                     <p>
-                        [Your approach here]
+                        The naive approach exhaustively searches over a fixed displacement window (<code>[-15, 15]</code> pixels) and evaluates each shift using a similarity metric. I experimented with:
+                    </p>
+                    <ul>
+                        <li><b>L2 norm:</b> Measures squared pixel differences. Works on simple cases but is sensitive to brightness differences. I used this metric initially for the smaller images.</li>
+                        <li><b>Normalized Cross-Correlation (NCC):</b> Normalizes intensity. This produced better results on most images.</li>
+                    </ul>
+                    <p>
+                        To improve accuracy, I cropped 20% of the image borders before scoring to avoid artifacts from dark borders and wrap-around introduced by shifting. This approach immediately worked for the smaller images (e.g., <code>cathedral.jpg</code>, <code>monastery.jpg</code>, <code>tobolsk.jpg</code>).
                     </p>
                 </section>
                 <section>
-                    <h4>Optimized Alignment</h4>
-                    <p>
-                        [Your approach here]
-                    </p>
+                    <h4>Pyramid Alignment</h4>
+                    <p>For larger <code>.tif</code> images, the naive approach became too slow. I implemented an image pyramid:</p>
+                    <ol>
+                        <li>Recursively downsample the image by a factor of 2 until it is small enough.</li>
+                        <li>Align at the smallest resolution using the naive method.</li>
+                        <li>Scale the displacement estimate back up and refine locally (using a smaller <code>refine_window</code>) at each higher level.</li>
+                    </ol>
                 </section>
                 <section>
-                    <h4>Problems</h4>
+                    <h4>Preprocessing (Edge Maps)</h4>
                     <p>
-                        [Your problems here]
+                        While pyramid + NCC worked well for almost all images, <code>emir.tif</code> was problematic due to its brightly colored blue robe. The robe is very bright in the blue channel but appears much darker in red, misleading intensity-based metrics.
+                    </p>
+                    <p>
+                        To address this, I implemented a simple edge detector using gradient magnitude (finite differences in <code>x</code> and <code>y</code>). Aligning on edges rather than raw intensities improved alignment, since structural features (e.g., robe outline) are consistent across channels even if brightness is not.
                     </p>
                 </section>
+            </section>
+            <section>
+                <h4>Problems</h4>
+                <p>Without cropping, the algorithm often misaligned due to black/white borders and wrap-around effects. I incorporated a 20% border crop to avoid these artifacts and only use the center of the image for alignment.</p>
+                <p>For <code>emir.tif</code>, I needed edge-based preprocessing to handle the strong color differences. To combat this, I implemented a preprocessing step of finding gradient magnitude to produce a "edge detector" map of the image.</p>
+                <p>Initially, alignment took several minutes for <code>.tif</code> images. Moving the cropping outside inner loops and using <code>refine_window</code> at higher resolutions reduced runtime to under a minute.</p>
             </section>
             <section>
                 <header>
