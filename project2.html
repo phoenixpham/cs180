@@ -33,7 +33,7 @@
             </section>
             <section>
                 <h3>Part 1.1: Convolutions from Scratch!</h3>
-                <p>I will be using my profile picture for the convolutions (it will be read as grayscale).</p>
+                <p>I will be using my profile picture for the convolutions (it will be read as grayscale):</p>
                 <div class="image-gallery">
                     <div class="gallery-item">
                         <img src="images/profile.jpeg" alt="Me" style="width: 30%; height: auto;"/>
@@ -81,6 +81,7 @@
                             return out
                     </code></pre>
                 </section>
+                <p>Both implementations handle the boundaries using zero-fill padding, extending the image in both kernel height <code>H</code> and kernel width <code>W</code> by <code>h </code> and <code>w // 2</code>.</p>
                 <section>
                     <h4>Comparison to Built-In Convolution (<code>scipy.signal.convolve2d</code>)</h4>
                     <p>Now, I will use my profile image to test my implementations with the built-in convolution function <code>scipy.signal.convolve2d</code>. I will try each convolution method with a <em>box filter</em>, and the finite difference operators <em>\(D_x = \begin{pmatrix} 1 & 0 & -1 \end{pmatrix}\)</em> and <em>\(D_y \begin{pmatrix} 1 \\ 0 \\ -1 \end{pmatrix}\)</em>.</p>
@@ -128,11 +129,11 @@
                             </div>
                             <div class="gallery-item">
                                 <img src="images/conv_four_dx.JPG" alt="Dx"/>
-                                <p class="caption">\(D_x\)</p>
+                                <p class="caption">\(D_x\) (Vertical edge detector)</p>
                             </div>
                             <div class="gallery-item">
                                 <img src="images/conv_four_dy.JPG" alt="Dy"/>
-                                <p class="caption">\(D_y\)</p>
+                                <p class="caption">\(D_y\) (Horizontal edge detector)</p>
                             </div>
                         </div>
                     </section>
@@ -145,11 +146,11 @@
                             </div>
                             <div class="gallery-item">
                                 <img src="images/conv_two_dx.JPG" alt="Dx"/>
-                                <p class="caption">\(D_x\)</p>
+                                <p class="caption">\(D_x\) (Vertical edge detector)</p>
                             </div>
                             <div class="gallery-item">
                                 <img src="images/conv_two_dy.JPG" alt="Dy"/>
-                                <p class="caption">\(D_y\)</p>
+                                <p class="caption">\(D_y\) (Horizontal edge detector)</p>
                             </div>
                         </div>
                     </section>
@@ -162,67 +163,620 @@
                             </div>
                             <div class="gallery-item">
                                 <img src="images/conv_scipy_dx.JPG" alt="Dx"/>
-                                <p class="caption">\(D_x\)</p>
+                                <p class="caption">\(D_x\) (Vertical edge detector)</p>
                             </div>
                             <div class="gallery-item">
                                 <img src="images/conv_scipy_dy.JPG" alt="Dy"/>
-                                <p class="caption">\(D_y\)</p>
+                                <p class="caption">\(D_y\) (Horizontal edge detector)</p>
                             </div>
                         </div>
                     </section>
-                    <p>All three convolution methods produce the same results. The box filter smooths the image, while the finite difference operators highlight edges in the horizontal and vertical directions.</p>
+                    <p>All three convolution methods produce the same results. The box filter smooths/blurs the image, while the finite difference operators highlight edges in the horizontal and vertical directions.</p>
                 </section>
             </section>
             <section>
                 <h3>Part 1.2: Finite Difference Operator</h3>
+                <p>I will be using this image:</p>
+                <div class="image-gallery">
+                    <div class="gallery-item">
+                        <img src="images/cameraman.jpg" alt="Cameraman" style="width: 30%; height: auto;"/>
+                    </div>
+                </div>
                 <section>
-                    <h4>Four For-Loop Convolution</h4>
-                    
+                    <h4>Code</h4>
+                    <pre style="width: 50%"><code>
+                        Dx = np.array([[1, 0, -1]])
+                        Dy = np.array([[1], [0], [-1]])
+                        ...
+                        cameraman = skio.imread(f'./data/cameraman.jpg', as_gray=True)
+                        cameraman = sk.img_as_float(cameraman)
+
+                        Ix = sp.signal.convolve2d(cameraman, Dx, mode='same', boundary='symm')
+                        Iy = sp.signal.convolve2d(cameraman, Dy, mode='same', boundary='symm')
+                        gradient_magnitude = np.sqrt(Ix**2 + Iy**2)
+                        edge_image = (gradient_magnitude > 0.35).astype(np.uint8) * 255
+                    </code></pre>
                 </section>
-                <section>
-                    <h4>Two For-Loop Convolution</h4>
-                    
-                </section>
-                <section>
-                    <h4>Built-In Convolution (<code>scipy.signal.convolve2d</code>)</h4>
-                    
-                </section>
+                <p>Here, I convolved the image with the finite difference operators \(D_x\) and \(D_y\) in order to get the partial derivatives in \(x\), \(I_x\), and \(y\), \(I_y\). Then using \(I_x\) and \(I_y\), I computed the gradient magnitude image by \(\sqrt{I_x^2 + I_y^2}\).</p>
+                <p>Finally, I created a binarized edge image by thresholding the gradient magnitude image at \(>0.35\). This took a few iterations fine-tuning, as I was aiming for an edge image that have all prominent edges, while removing as much noise possible (e.g., the grass). Note that it was difficult getting the edges of the buildings in the background, as the filters could only extract the edges of the cameraman in the foreground.</p>
+                <div class="image-gallery">
+                    <div class="gallery-item">
+                        <img src="images/Ix.jpg" alt="Ix" style="width: 90%; height: auto;"/>
+                        <p class="caption">Partial derivative in \(x\), \(I_x\)</p>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="images/Iy.jpg" alt="Iy" style="width: 90%; height: auto;"/>
+                        <p class="caption">Partial derivative in \(y\), \(I_y\)</p>
+                    </div>
+                </div>
+                <div class="image-gallery">
+                    <div class="gallery-item">
+                        <img src="images/grad_mag.jpg" alt="Gradient Magnitude" style="width: 50%; height: auto;"/>
+                        <p class="caption">Gradient Magnitude Image</p>
+                    </div>
+                </div>
+                <div class="image-gallery">
+                    <div class="gallery-item">
+                        <img src="images/edge_image.jpg" alt="Edge Image" style="width: 50%; height: auto;"/>
+                        <p class="caption">A binarized edge image (threshold \(>0.35\))</p>
+                    </div>
+                </div>
             </section>
             <section>
                 <h3>Part 1.3: Derivative of Gaussian (DoG) Filter</h3>
-                <section>
-                    <h4>Four For-Loop Convolution</h4>
-                    
-                </section>
-                <section>
-                    <h4>Two For-Loop Convolution</h4>
-                    
-                </section>
-                <section>
-                    <h4>Built-In Convolution (<code>scipy.signal.convolve2d</code>)</h4>
-                    
-                </section>
+                <p>I will be using the same image from Part 1.2. I wasn't able to cleanly remove the noise in the previous results, so now I will use the <em>Gaussian filter</em> to first smooth/blur the image. Using the built in 1D Gaussian filter <code>cv2.getGaussianKernel()</code>, I created a 2D Gaussian filter for images by taking the outer product of the 1D Gaussian and its transpose.</p>
+                <pre style="width: 50%"><code>
+                    def gaussian_filter(kernel_size=9, sigma=2):
+                        g1d = cv2.getGaussianKernel(kernel_size, sigma)
+                        return g1d @ g1d.T
+                </code></pre>
+                <p>This is what the blurred version of the cameraman looks like after convolving it with this Gaussian filter:</p>
+                <div class="image-gallery">
+                    <div class="gallery-item">
+                        <img src="images/cameraman_blurred.jpg" alt="Blurred" style="width: 30%; height: auto;"/>
+    
+                    </div>
+                </div>
+                <p>Now repeating the same procedure in Part 1.2,</p>
+                <pre style="width: 50%"><code>
+                    G = gaussian_filter()
+                    blurred = sp.signal.convolve2d(cameraman, G, mode='same', boundary='symm')
+
+                    Ix = sp.signal.convolve2d(blurred, Dx, mode='same', boundary='symm')
+                    Iy = sp.signal.convolve2d(blurred, Dy, mode='same', boundary='symm')
+                    gradient_mag_blur = np.sqrt(Ix**2 + Iy**2)
+                    edge_image_blur = (gradient_mag_blur > 0.09).astype(np.uint8) * 255
+                </code></pre>
+                <p>which gets these results:</p>
+                <div class="image-gallery">
+                    <div class="gallery-item">
+                        <img src="images/Ix_blur.jpg" alt="Ix (blurred)" style="width: 90%; height: auto;"/>
+                        <p class="caption">Partial derivative in \(x\), \(I_x\) (blurred)</p>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="images/Iy_blur.jpg" alt="Iy (blurred)" style="width: 90%; height: auto;"/>
+                        <p class="caption">Partial derivative in \(y\), \(I_y\) (blurred)</p>
+                    </div>
+                </div>
+                <div class="image-gallery">
+                    <div class="gallery-item">
+                        <img src="images/grad_mag_blur.jpg" alt="Gradient Magnitude (blurred)" style="width: 50%; height: auto;"/>
+                        <p class="caption">Gradient Magnitude Image (blurred)</p>
+                    </div>
+                </div>
+                <div class="image-gallery">
+                    <div class="gallery-item">
+                        <img src="images/edge_image_blur.jpg" alt="Edge Image (blurred)" style="width: 50%; height: auto;"/>
+                        <p class="caption">A binarized edge image (threshold \(>0.09\)) (blurred)</p>
+                    </div>
+                </div>
+                <p>I had to lower the thresholding value to \(>0.09\). Now, I can do the same thing but avoid having to smooth the original image by convolving the Gaussian with \(D_x\) and \(D_y\) to get derivative of Gaussian (DoG) filters:</p>
+                <div class="image-gallery">
+                    <div class="gallery-item">
+                        <img src="images/DoGx.jpg" alt="Ix (DoG)" style="width: 50%; height: auto;"/>
+                        <p class="caption">Derivative of Gaussian in \(x\)</p>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="images/DoGy.jpg" alt="Iy (DoG)" style="width: 50%; height: auto;"/>
+                        <p class="caption">Derivative of Gaussian in \(y\)</p>
+                    </div>
+                </div>
+                <p><em>Note:</em> the filters themselves are small kernels, but when applied they reveal strong horizontal/vertical edges.</p>
+                <pre style="width: 50%"><code>
+                    DoGx = sp.signal.convolve2d(G, Dx, mode='same', boundary='symm')
+                    DoGy = sp.signal.convolve2d(G, Dy, mode='same', boundary='symm')
+
+                    Ix_DoG = sp.signal.convolve2d(cameraman, DoGx, mode='same', boundary='symm')
+                    Iy_DoG = sp.signal.convolve2d(cameraman, DoGy, mode='same', boundary='symm')
+                    gradient_mag_dog = np.sqrt(Ix_DoG**2 + Iy_DoG**2)
+                    edge_image_dog = (gradient_mag_dog > 0.09).astype(np.uint8) * 255
+                </code></pre>
+                <p>And we get practically the same results:</p>
+                <div class="image-gallery">
+                    <div class="gallery-item">
+                        <img src="images/Ix_DoG.jpg" alt="Ix (DoG)" style="width: 90%; height: auto;"/>
+                        <p class="caption">Partial derivative in \(x\), \(I_x\) (DoG)</p>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="images/Iy_DoG.jpg" alt="Iy (DoG)" style="width: 90%; height: auto;"/>
+                        <p class="caption">Partial derivative in \(y\), \(I_y\) (DoG)</p>
+                    </div>
+                </div>
+                <div class="image-gallery">
+                    <div class="gallery-item">
+                        <img src="images/grad_mag_DoG.jpg" alt="Gradient Magnitude (DoG)" style="width: 50%; height: auto;"/>
+                        <p class="caption">Gradient Magnitude Image (DoG)</p>
+                    </div>
+                </div>
+                <div class="image-gallery">
+                    <div class="gallery-item">
+                        <img src="images/edge_image_DoG.jpg" alt="Edge Image (DoG)" style="width: 50%; height: auto;"/>
+                        <p class="caption">A binarized edge image (threshold \(>0.09\)) (DoG)</p>
+                    </div>
+                </div>
+                <p>I used the same thresholding value \(>0.09\). We can compare the edge images for all three methods:</p>
+                <div class="image-gallery">
+                    <div class="gallery-item">
+                        <img src="images/edge_image_DoG.jpg" alt="Edge Image (DoG)"/>
+                        <p class="caption">Derivative of Gaussian (DoG) filter method</p>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="images/edge_image_blur.jpg" alt="Edge Image (blurred)"/>
+                        <p class="caption">Gaussian smoothing method</p>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="images/edge_image.jpg" alt="Edge Image"/>
+                        <p class="caption">Finite difference method</p>
+                    </div>
+                </div>
+                <p>The results for DoG and Gaussian smoothing are much cleaner, as the Gaussian filter was able to smooth out the noise in the image.</p>
             </section>
             <section>
                 <h2>Part 2: Fun with Frequencies!</h2>
             </section>
             <section>
-                <header>
-                    <h3>cathedral.jpg</h3>
-                </header>
-                <p> G aligned to B: (-5, -2)</p>
-                <p> R aligned to B: (-12, -3)</p>
+                <h3>Part 2.1: Image "Sharpening"</h3>
+                <p>This is my implementation of the unsharp mask filtering technique:</p>
+                <pre style="width: 50%"><code>
+                    def unsharp_masking(im, kernel_size=9, sigma=2, alpha=1.0):
+                        G = gaussian_filter(kernel_size, sigma)
+
+                        sharpened = np.zeros_like(im, dtype=np.float32)
+                        high_freq_all = np.zeros_like(im, dtype=np.float32)
+                        for channel in range(im.shape[2]):
+                            blurred = sp.signal.convolve2d(im[:, :, channel], G, mode='same', boundary='symm')
+                            high_freq = im[:, :, channel] - blurred
+                            high_freq_all[:, :, channel] = high_freq
+                            sharpened[:, :, channel] = im[:, :, channel] + (alpha * high_freq)
+
+                        return np.clip(sharpened, 0, 1), high_freq_all
+                </code></pre>
+                <p>Here, I use the Gaussian filter as a low-pass (blur) filter to extract the low frequencies of each color channel of an image, then subtract these blurry images from the original image to obtain only the high frequencies. With these high frequencies, I added it back into the original image to "sharpen" the original. I noticed that my profile image was a bit blurry. So after running,</p>
+                <pre style="width: 50%"><code>
+                    taj = skio.imread(f'./data/taj.jpg')
+                    taj = sk.img_as_float(taj)
+
+                    me = skio.imread(f'./data/me.jpg')
+                    me = sk.img_as_float(me)
+
+                    sharpened_taj, high_freq_taj = unsharp_masking(taj)
+                    sharpened_me, high_freq_me = unsharp_masking(me)
+                </code></pre>
+                <p>these are the results of a Taj Mahal image and me:</p>
+                <div class="image-gallery">
+                    <div class="gallery-item">
+                        <img src="images/taj.jpg" alt="Taj Mahal"/>
+                        <p class="caption">Original blurry image of the Taj Mahal</p>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="images/high_freq_taj.jpg" alt="Taj Mahal (high)"/>
+                        <p class="caption">High-frequencies of the Taj Mahal</p>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="images/sharp_taj.jpg" alt="Taj Mahal (sharp)"/>
+                        <p class="caption">Sharpened version of the Taj Mahal</p>
+                    </div>
+                </div>
+                <div class="image-gallery">
+                    <div class="gallery-item">
+                        <img src="images/profile.jpeg" alt="Me"/>
+                        <p class="caption">Original blurry image of me</p>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="images/high_freq_me.jpg" alt="Me (high)"/>
+                        <p class="caption">High-frequencies of me</p>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="images/sharp_me.jpg" alt="Me (sharp)"/>
+                        <p class="caption">Sharpened version of me</p>
+                    </div>
+                </div>
+                <p>For evaluation, I blurred the sharpened image of the Taj Mahal and then tried to sharpen it again:</p>
+                <pre style="width: 50%"><code>
+                    blurred_sharp_taj = np.zeros_like(sharpened_taj, dtype=np.float32)
+                    for channel in range(sharpened_taj.shape[2]):
+                            blurred_sharp_taj[:, :, channel] = sp.signal.convolve2d(sharpened_taj[:, :, channel], G, 
+                                                                                                mode='same', boundary='symm')
+                    sharpened_blurred_sharp_taj, high_freq_blurred_sharp_taj = unsharp_masking(blurred_sharp_taj)
+                </code></pre>
+                <p>These are the results:</p>
+                <div class="image-gallery">
+                    <div class="gallery-item">
+                        <img src="images/blurred_sharp_taj.jpg" alt="Blurry Taj Mahal"/>
+                        <p class="caption">Blurred version of the sharpened Taj Mahal</p>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="images/high_freq_blurred_sharp_taj.jpg" alt="Blurry Taj Mahal (high)"/>
+                        <p class="caption">High-frequencies of the blurred sharpened Taj Mahal</p>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="images/sharp_blurred_sharp_taj.jpg" alt="Blurry Taj Mahal (sharp)"/>
+                        <p class="caption">Sharpened version of the blurred sharpened Taj Mahal</p>
+                    </div>
+                </div>
+                <p>As you can see, the "sharpening" doesn't seem to work because blurring an image will remove most of the high frequencies, so trying to "sharpen" it will only add little high frequency it has left to the original image, and thus the result looks similar to the input.</p>
+                <p>I will now demonstrate trying different \(\alpha\) values (varying the sharpening amount) affects the results. The previous results used \(\alpha = 1.0\).</p>
+                <div class="image-gallery">
+                    <div class="gallery-item">
+                        <img src="images/sharp_taj_0.5.jpg" alt="Taj Mahal (0.5)"/>
+                        <p class="caption">\(\alpha = 0.5\)</p>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="images/sharp_taj_2.0.jpg" alt="Taj Mahal (2.0)"/>
+                        <p class="caption">\(\alpha = 2.0\)</p>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="images/sharp_taj_10.0.jpg" alt="Taj Mahal (10.0)"/>
+                        <p class="caption">\(\alpha = 10.0\)</p>
+                    </div>
+                </div>
+                <p>The higher the \(\alpha\), the stronger the sharpness becomes in the resulting image. \(\alpha\) essentially amplifies the high frequencies that are added back into the original image.</p>
+            </section>
+            <section>
+                <h3>Part 2.2: Hybrid Images</h3>
+                <p>I will create hybrid images for the following 3 pairs:</p>
                 <div class="before-after-container">
                     <div class="before">
-                        <img src="images/cathedral.jpg" alt="Before">
-                        <p class="caption">Before</p>
+                        <img src="images/nutmeg.jpg" alt="Nutmeg" style="width: 70%; height: auto;"/>
                     </div>
                     <div class="after">
-                        <img src="images/out_cathedral.jpg" alt="After">
-                        <p class="caption">After</p>
+                        <img src="images/DerekPicture.jpg" alt="Derek" style="width: 50%; height: auto;"/>
+                    </div>
+                </div>
+                <div class="before-after-container">
+                    <div class="before">
+                        <img src="images/curious.jpg" alt="Curious" style="width: 70%; height: auto;"/>
+                    </div>
+                    <div class="after">
+                        <img src="images/me1.jpg" alt="Me" style="width: 80%; height: auto;"/>
+                    </div>
+                </div>
+                <div class="before-after-container">
+                    <div class="before">
+                        <img src="images/bball.jpg" alt="Basketball" style="width: 70%; height: auto;"/>
+                    </div>
+                    <div class="after">
+                        <img src="images/bball1.jpg" alt="Basketball 1" style="width: 70%; height: auto;"/>
+                    </div>
+                </div>
+                <p>I first use the provided starter code (<code>align_image_code.py</code>'s <code>align_images()</code>) to align the pairs of images to where I want (e.g., for Derek + Nutmeg, align their eyes).</p>
+                <p>Then, I implemented code to low-pass filter to one image (Derek) and high-pass filter the other image (Nutmeg). I used a standard 2D Gaussian filter for the low-pass filter, and simply subtract the low-pass filtered image from the original.</p>
+                <pre style="width: 50%"><code>
+                    def low_pass_filter(im, kernel_size=9, sigma=2):
+                        G = gaussian_filter(kernel_size, sigma)
+                        blurred_im = np.zeros_like(im, dtype=np.float32)
+                        for channel in range(im.shape[2]):
+                                blurred_im[:, :, channel] = sp.signal.convolve2d(im[:, :, channel], G, mode='same', boundary='symm')
+                        return blurred_im
+
+                    def high_pass_filter(im, kernel_size=9, sigma=2):
+                        return im - low_pass_filter(im, kernel_size, sigma)
+                </code></pre>
+                <p>Using these pass filters, I simply add together the low-pass filtered image with the high-pass filtered image with adjustable cutoff-frequencies \(\sigma\) for each filter.</p>
+                <pre style="width: 50%"><code>
+                    def hybrid_image(high_im, low_im, kernel_size=9, sigma_high=2, sigma_low=2):
+                        high_im = high_pass_filter(high_im, kernel_size, sigma_high)
+                        low_im = low_pass_filter(low_im, kernel_size, sigma_low)
+                        hybrid = high_im + low_im
+                        return np.clip(hybrid, 0, 1), high_im, low_im
+                </code></pre>
+                <p>I also wanted to keep track of the frequency content of all the images throughout the process. For visualization, I compute the log-magnitude of the Fourier transform, with the zero-frequency component shifted to the center of the image using <code>np.fft.fftshift()</code>. This makes it easier to see the distribution of high- and low-frequency components.</p>
+                <pre style="width: 50%"><code>
+                    def save_fft(im, filename):
+                        if im.ndim == 3:
+                            im_gray = np.mean(im, axis=2)  # convert to grayscale
+                        else:
+                            im_gray = im
+
+                        f = np.fft.fft2(im_gray)
+                        fshift = np.fft.fftshift(f)
+                        magnitude = np.log(np.abs(fshift))
+
+                        magnitude = magnitude / np.max(magnitude)  # normalize
+                        convert_and_save_uint8(magnitude, filename)
+                </code></pre>
+                <p>Now, choosing the cutoff frequencies \(\sigma_{\text{high}} = 10\) and, \(\sigma_{\text{low}} = 25\) the result of the code</p>
+                <pre style="width: 50%"><code>
+                    derek = skio.imread(f'./data/DerekPicture.jpg')
+                    derek = sk.img_as_float(derek)
+
+                    nutmeg = skio.imread(f'./data/nutmeg.jpg')
+                    nutmeg = sk.img_as_float(nutmeg)
+
+                    nutmeg_aligned, derek_aligned = align_images(nutmeg, derek)
+
+                    sigma_high = 10
+                    sigma_low = 25
+                    hybrid, high_im, low_im = hybrid_image(high_im=nutmeg_aligned, low_im=derek_aligned, sigma_high=sigma_high, 
+                                                                                                                sigma_low=sigma_low)
+
+                    save_fft(nutmeg_aligned, 'fft_nutmeg')
+                    save_fft(derek_aligned, 'fft_derek')
+                    save_fft(low_im, 'fft_low')
+                    save_fft(high_im, 'fft_high')
+                    save_fft(hybrid, 'fft_hybrid')
+                </code></pre>
+                <p>is:</p>
+                <section>
+                    <h5>Aligned images</h5>
+                    <div class="before-after-container">
+                        <div class="before">
+                            <img src="images/nutmeg_aligned.jpg" alt="Nutmeg" style="width: 50%; height: auto;"/>
+                            <p class="caption">Aligned Nutmeg</p>
+                        </div>
+                        <div class="after">
+                            <img src="images/derek_aligned.jpg" alt="Derek" style="width: 50%; height: auto;"/>
+                            <p class="caption">Aligned Derek</p>
+                        </div>
+                    </div>
+                    <div class="before-after-container">
+                        <div class="before">
+                            <img src="images/fft_nutmeg.jpg" alt="Nutmeg (log-magnitude FFT)" style="width: 50%; height: auto;"/>
+                            <p class="caption">Aligned Nutmeg (log-magnitude FFT)</p>
+                        </div>
+                        <div class="after">
+                            <img src="images/fft_derek.jpg" alt="Derek (log-magnitude FFT)" style="width: 50%; height: auto;"/>
+                            <p class="caption">Aligned Derek (log-magnitude FFT)</p>
+                        </div>
+                    </div>
+                </section>
+                <section>
+                    <h5>Filtered results</h5>
+                    <div class="before-after-container">
+                        <div class="before">
+                            <img src="images/high_im.jpg" alt="Filtered Nutmeg" style="width: 50%; height: auto;"/>
+                            <p class="caption">High-pass filtered Nutmeg</p>
+                        </div>
+                        <div class="after">
+                            <img src="images/low_im.jpg" alt="Filtered Derek" style="width: 50%; height: auto;"/>
+                            <p class="caption">Low-pass filtered Derek</p>
+                        </div>
+                    </div>
+                    <div class="before-after-container">
+                        <div class="before">
+                            <img src="images/fft_high.jpg" alt="Filtered Nutmeg (FFT)" style="width: 50%; height: auto;"/>
+                            <p class="caption">High-pass filtered Nutmeg (log-magnitude FFT)</p>
+                        </div>
+                        <div class="after">
+                            <img src="images/fft_low.jpg" alt="Filtered Derek (FFT)" style="width: 50%; height: auto;"/>
+                            <p class="caption">Low-pass filtered Derek (log-magnitude FFT)</p>
+                        </div>
+                    </div>
+                </section>
+                <section>
+                    <h5>Final image</h5>
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/hybrid.jpg" alt="Hybrid" style="width: 30%; height: auto;"/>
+                            <p class="caption">Hybrid image</p>
+                        </div>
+                    </div>
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/fft_hybrid.jpg" alt="Hybrid (log-magnitude FFT)" style="width: 30%; height: auto;"/>
+                            <p class="caption">Hybrid image (log-magnitude FFT)</p>
+                        </div>
+                    </div>
+                </section>
+                <p>Here are the results of the other pairs of images:</p>
+                <div class="image-gallery">
+                    <div class="gallery-item">
+                        <img src="images/hybrid_1.jpg" alt="Hybrid 1" style="width: 55%; height: auto;"/>
+                        <p class="caption">Hybrid image (Curious me)</p>
+                    </div>
+                </div>
+                <div class="image-gallery">
+                    <div class="gallery-item">
+                        <img src="images/hybrid_2.jpg" alt="Hybrid 2" style="width: 55%; height: auto;"/>
+                        <p class="caption">Hybrid image (Basketball)</p>
                     </div>
                 </div>
             </section>
+            <section>
+                <h3>Part 2.3: Gaussian and Laplacian Stacks</h3>
+                <p>Here is my implementation for the Gaussian and Laplacian <b>stacks</b>:</p>
+                <pre style="width: 50%"><code>
+                    def gaussian_stack(im, levels=5, sigma=2):
+                        G = gaussian_filter(9, sigma)
+                        stack = [im]
+                        for _ in range(1, levels):
+                            if im.ndim == 3: # color image
+                                level = np.zeros_like(stack[-1])
+                                for channel in range(im.shape[2]):
+                                    level[:, :, channel] = sp.signal.convolve2d(stack[-1][:, :, channel], G, 
+                                                                                    mode='same', boundary='symm')
+                            else:
+                                level = sp.signal.convolve2d(stack[-1], G, mode='same', boundary='symm')
+                            stack.append(level)
+                        return stack
+
+                    def laplacian_stack(im, levels=5, sigma=2):
+                        g_stack = gaussian_stack(im, levels, sigma)
+                        l_stack = []
+                        for i in range(levels-1):
+                            l_stack.append(g_stack[i] - g_stack[i+1])
+                        l_stack.append(g_stack[-1])  # last level
+                        return l_stack, g_stack
+                </code></pre>
+                <p>Applying these to the oraple for 9 levels:</p>
+                <div class="image-gallery">
+                    <div class="gallery-item">
+                        <img src="images/gaussian_stack.png" alt="Gaussian Stack" style="width: 100%; height: auto;"/>
+                    </div>
+                </div>
+                <div class="image-gallery">
+                    <div class="gallery-item">
+                        <img src="images/laplacian_stack.png" alt="Laplacian Stack" style="width: 100%; height: auto;"/>
+                    </div>
+                </div>
+            </section>
+            <section>
+                <h3>Part 2.4: Multi-Resolution Blending (a.k.a. the Oraple!)</h3>
+                <p>Using the Gaussian and Laplacian stacks, I implemented Burt and Adelson's multi-resolution spline algorithm from the 1983 <a href="https://persci.mit.edu/pub_pdfs/spline83.pdf" target="_blank" rel="noopener noreferrer">paper</a> in order to create the oraple, along with two other images.</p>
+                <pre style="width: 50%"><code>
+                    def multires_spline(im1, im2, mask, levels=5, sigma=2):
+                        # Step 1a
+                        l1, _ = laplacian_stack(im1, levels, sigma)
+                        l2, _ = laplacian_stack(im2, levels, sigma)
+
+                        # Step 1b
+                        gr = gaussian_stack(mask, levels, sigma)
+
+                        # Step 2
+                        LS = []
+                        for i in range(levels):
+                            LS.append(gr[i] * l1[i] + (1 - gr[i]) * l2[i])
+                        
+                        # Step 3
+                        out = LS[-1]
+                        for i in range(len(LS)-2, -1, -1):
+                            out += LS[i]
+
+                        return out
+                </code></pre>
+                <p>Since I am using stacks instead of pyramids, you will need to use a mask for the images.</p>
+            </section>
+            <section>
+                <h4>Oraple</h4>
+                <p>I will be using a vertical seam in the middle as the mask to nicely blend the apple and orange together.</p>
+                <section>
+                    <h5>Inputs</h5>
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/apple.jpeg" alt="Apple" style="width: 60%; height: auto;"/>
+                            <p class="caption">An apple</p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/orange.jpeg" alt="Orange" style="width: 60%; height: auto;"/>
+                            <p class="caption">An orange</p>
+                        </div>
+                    </div>
+                </section>
+                <section>
+                    <h5>Masked results</h5>
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/apple_masked.jpg" alt="Apple (masked)" style="width: 60%; height: auto;"/>
+                            <p class="caption">An apple (masked by vertical seam)</p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/orange_masked.jpg" alt="Orange (masked)" style="width: 60%; height: auto;"/>
+                            <p class="caption">An orange (masked by vertical seam)</p>
+                        </div>
+                    </div>
+                </section>
+                <section>
+                    <h5>Multi-resolution blended image</h5>
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/oraple.jpg" alt="Oraple" style="width: 40%; height: auto;"/>
+                            <p class="caption">An oraple</p>
+                        </div>
+                    </div>
+                </section>
+                <section>
+                    <h4>Rothko</h4>
+                    <p>I will be using a horizontal seam that zeros out everything slightly above the middle as the mask to blend both of the Rothkos.</p>
+                    <section>
+                        <h5>Inputs</h5>
+                        <div class="image-gallery">
+                            <div class="gallery-item">
+                                <img src="images/rothko_oat.jpg" alt="Orange and Tan" style="width: 60%; height: auto;"/>
+                                <p class="caption">Mark Rothko, <em>Orange and Tan</em>. 1954</p>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="images/rothko_8.jpg" alt="No. 8" style="width: 60%; height: auto;"/>
+                                <p class="caption">Mark Rothko, <em>No. 8</em>. 1949</p>
+                            </div>
+                        </div>
+                    </section>
+                    <section>
+                        <h5>Masked results</h5>
+                        <div class="image-gallery">
+                            <div class="gallery-item">
+                                <img src="images/rothko_oat_masked.jpg" alt="Orange and Tan (masked)" style="width: 60%; height: auto;"/>
+                                <p class="caption">Mark Rothko, <em>Orange and Tan</em>. 1954 (masked by horizontal seam)</p>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="images/rothko_8_masked.jpg" alt="No. 8 (masked)" style="width: 60%; height: auto;"/>
+                                <p class="caption">Mark Rothko, <em>No. 8</em>. 1949 (masked by horizontal seam)</p>
+                            </div>
+                        </div>
+                    </section>
+                    <section>
+                        <h5>Multi-resolution blended image</h5>
+                        <div class="image-gallery">
+                            <div class="gallery-item">
+                                <img src="images/rothko_oat_8.jpg" alt="Hybrid" style="width: 40%; height: auto;"/>
+                                <p class="caption">A hybrid of <em>Orange and Tan</em> and <em>No. 8</em> by Mark Rothko</p>
+                            </div>
+                        </div>
+                    </section>
+            </section>
+            <section>
+                <h4>Manga</h4>
+                <p>I will be using a hand-drawn mask in order to stitch together two manga panels. This is what the mask looks like:</p>
+                <div class="image-gallery">
+                    <div class="gallery-item">
+                        <img src="images/mask.jpg" alt="Me" style="width: 40%; height: auto;"/>
+                    </div>
+                </div>
+                <section>
+                    <h5>Inputs</h5>
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/vagabond.jpg" alt="Vagabond" style="width: 90%; height: auto;"/>
+                            <p class="caption">A panel from <em>Vagabond</em>, by Takehiko Inoue</p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/hxh.jpg" alt="HxH" style="width: 90%; height: auto;"/>
+                            <p class="caption">A panel from <em>Hunter x Hunter</em>, by Yoshihiro Togashi</p>
+                        </div>
+                    </div>
+                </section>
+                <section>
+                    <h5>Masked results</h5>
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/vagabond_masked.jpg" alt="Vagabond (masked)" style="width: 90%; height: auto;"/>
+                            <p class="caption">A panel from <em>Vagabond</em>, by Takehiko Inoue (masked by horizontal seam)</p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/hxh_masked.jpg" alt="HxH (masked)" style="width: 90%; height: auto;"/>
+                            <p class="caption">A panel from <em>Hunter x Hunter</em>, by Yoshihiro Togashi (masked by horizontal seam)</p>
+                        </div>
+                    </div>
+                </section>
+                <section>
+                    <h5>Multi-resolution blended image</h5>
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/vagabond_hxh.jpg" alt="Hybrid" style="width: 50%; height: auto;"/>
+                            <p class="caption">A hybrid of manga panels from <em>Vagabond</em> and <em>Hunter x Hunter</em></p>
+                        </div>
+                    </div>
+                </section>
+        </section>
         </main>
     </div>
 </body>
