@@ -238,8 +238,8 @@ video {
 }
 
 pre {
-    overflow-x: auto;
-    white-space: pre;
+    white-space: pre-wrap;
+    word-wrap: break-word;
     padding: 10px;
     border-radius: 5px;
     max-width: 100%;
