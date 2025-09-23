@@ -237,14 +237,6 @@ video {
   margin: 0 auto;
 }
 
-pre {
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    padding: 10px;
-    border-radius: 5px;
-    max-width: 100%;
-    box-sizing: border-box;
-  }
 
 /* Tablets */
 @media (max-width: 1024px) {
@@ -283,6 +275,11 @@ pre {
         width: 100%;
         height: auto;
     }
+    pre {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        overflow-x: hidden;
+      }
 }
 
 @media (max-width: 480px) {
