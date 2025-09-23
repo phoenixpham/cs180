@@ -658,7 +658,7 @@
             </section>
             <section>
                 <h4>Oraple</h4>
-                <p>I will be using a vertical seam in the middle as the mask to nicely blend the apple and orange together.</p>
+                <p>I will be using a smoothed vertical seam as the mask to nicely blend the apple and orange together.</p>
                 <section>
                     <h5>Inputs</h5>
                     <div class="image-gallery">
@@ -673,15 +673,15 @@
                     </div>
                 </section>
                 <section>
-                    <h5>Masked results</h5>
+                    <h5>Masked Inputs</h5>
                     <div class="image-gallery">
                         <div class="gallery-item">
                             <img src="images/apple_masked.jpg" alt="Apple (masked)" style="width: 60%; height: auto;"/>
-                            <p class="caption">An apple (masked by vertical seam)</p>
+                            <p class="caption">An apple (masked)</p>
                         </div>
                         <div class="gallery-item">
                             <img src="images/orange_masked.jpg" alt="Orange (masked)" style="width: 60%; height: auto;"/>
-                            <p class="caption">An orange (masked by vertical seam)</p>
+                            <p class="caption">An orange (masked)</p>
                         </div>
                     </div>
                 </section>
@@ -696,7 +696,7 @@
                 </section>
                 <section>
                     <h4>Rothko</h4>
-                    <p>I will be using a horizontal seam that zeros out everything slightly above the middle as the mask to blend both of the Rothkos.</p>
+                    <p>I will be using a smoothed horizontal seam as the mask to blend both of the Rothkos.</p>
                     <section>
                         <h5>Inputs</h5>
                         <div class="image-gallery">
@@ -711,15 +711,15 @@
                         </div>
                     </section>
                     <section>
-                        <h5>Masked results</h5>
+                        <h5>Masked Inputs</h5>
                         <div class="image-gallery">
                             <div class="gallery-item">
                                 <img src="images/rothko_oat_masked.jpg" alt="Orange and Tan (masked)" style="width: 60%; height: auto;"/>
-                                <p class="caption">Mark Rothko, <em>Orange and Tan</em>. 1954 (masked by horizontal seam)</p>
+                                <p class="caption">Mark Rothko, <em>Orange and Tan</em>. 1954 (masked)</p>
                             </div>
                             <div class="gallery-item">
                                 <img src="images/rothko_8_masked.jpg" alt="No. 8 (masked)" style="width: 60%; height: auto;"/>
-                                <p class="caption">Mark Rothko, <em>No. 8</em>. 1949 (masked by horizontal seam)</p>
+                                <p class="caption">Mark Rothko, <em>No. 8</em>. 1949 (masked)</p>
                             </div>
                         </div>
                     </section>
@@ -755,15 +755,15 @@
                     </div>
                 </section>
                 <section>
-                    <h5>Masked results</h5>
+                    <h5>Masked Inputs</h5>
                     <div class="image-gallery">
                         <div class="gallery-item">
                             <img src="images/vagabond_masked.jpg" alt="Vagabond (masked)" style="width: 90%; height: auto;"/>
-                            <p class="caption">A panel from <em>Vagabond</em>, by Takehiko Inoue (masked by horizontal seam)</p>
+                            <p class="caption">A panel from <em>Vagabond</em>, by Takehiko Inoue (masked)</p>
                         </div>
                         <div class="gallery-item">
                             <img src="images/hxh_masked.jpg" alt="HxH (masked)" style="width: 90%; height: auto;"/>
-                            <p class="caption">A panel from <em>Hunter x Hunter</em>, by Yoshihiro Togashi (masked by horizontal seam)</p>
+                            <p class="caption">A panel from <em>Hunter x Hunter</em>, by Yoshihiro Togashi (masked)</p>
                         </div>
                     </div>
                 </section>
@@ -776,6 +776,11 @@
                         </div>
                     </div>
                 </section>
+        </section>
+        <section>
+            <h2>Conclusion</h2>
+            <p>Through this project, I had experience with both spatial and frequency domain techniques in image processing. Starting from basic convolution implementations, I moved toward unsharp masking for sharpening, hybrid images that exploit low- and high-frequency perception, and finally Gaussian/Laplacian stacks for multi-resolution blending.</p>
+            <p>One of the key lessons was that blending quality depends critically on the mask, as a sharp binary mask produces visible seams, while smoothing the mask before applying the multi-resolution algorithm yields seamless transitions (shoutout to Anonymous Clam). Conceptually, I also deepened my understanding of how the Fourier transform reveals frequency content and why manipulating low vs. high frequencies leads to different perceptual effects.</p>
         </section>
         </main>
     </div>
