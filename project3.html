@@ -467,6 +467,7 @@
                     </div>
                 </div>
                 <p>From my results, using Nearest Neighbor Interpolation was at least 2x faster without surprisingly compromising much quality compared to Bilinear Interpolation from a reasonable distance. This time difference is because for Bilinear Interpolation, you need to compute the weighted average of the neighboring pixels, whereas you can just round to the nearest pixel value in Nearest Neighbor.</p>
+                <p>In theory, Bilinear Interpolation produces smoother results and better preserves fine detail, but is slower due to the additional computations. In contrast, Nearest Neighbor Interpolation simply uses the nearest integer pixel value, which makes it faster but at the cost of image smoothness and finer detail.</p>
             </section>
             <section>
                 <h3>A.4: Blend the Images into a Mosaic</h3>
