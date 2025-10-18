@@ -556,6 +556,111 @@
                   </div>
                 </div>
             </section>
+            <section>
+                <h2>Part B: Feature Matching for Autostitching</h2>
+            </section>
+            <p>The algorithms used in this part follow from Brown et al.'s paper <a href="https://cal-cs180.github.io/fa25/hw/proj3/Papers/MOPS.pdf" target="_blank" rel="noopener noreferrer"><em>Multi-Image Matching using Multi-Scale Oriented Patches</em></a></p>
+            <section>
+                <h3>B.1: Harris Corner Detection</h3>
+                <p> Using the provided starter for the Harris Interest Point Detector, these are the Harris corners found on the Doe Library image set:</p>
+                <div class="image-gallery">
+                    <div class="gallery-item">
+                        <img src="images/harris_doe.jpg" alt=""/>
+                        <p class="caption">without ANMS</p>
+                    </div>
+                </div>
+                <p> After implementing Adaptive Non-Maximal Suppression (ANMS), these are the suppressed number of Harris corner points found on the Doe Library image set:</p>
+                <div class="image-gallery">
+                    <div class="gallery-item">
+                        <img src="images/anms_doe.jpg" alt=""/>
+                        <p class="caption">with ANMS</p>
+                    </div>
+                </div>
+            </section>
+            <section>
+                <h3>B.2: Feature Descriptor Extraction</h3>
+                <p>Using the suppressed Harris corner points, I implemented Feature Descriptor extraction method to extract \(8 \times 8\) feature descriptors. Here are 7 extracted features on the Doe Library image set:</p>
+                <div class="image-gallery">
+                    <div class="gallery-item">
+                        <img src="images/descriptors_doe_center.jpg" alt=""/>
+                        <p class="caption">Doe Library (Center)</p>
+                    </div>
+                </div>
+                <div class="image-gallery">
+                    <div class="gallery-item">
+                        <img src="images/descriptors_doe_left.jpg" alt=""/>
+                        <p class="caption">Doe Library (Left)</p>
+                    </div>
+                </div>
+                <div class="image-gallery">
+                    <div class="gallery-item">
+                        <img src="images/descriptors_doe_right.jpg" alt=""/>
+                        <p class="caption">Doe Library (Right)</p>
+                    </div>
+                </div>
+            </section>
+            <section>
+                <h3>B.3: Feature Matching</h3>
+                <p>Now being able to extract the feature descriptors in the images, for the left and right images, we will find the pairs that look most similar (feature similarlity was computed using Euclidean distance) to the center image. The matches were then filtered with Lowe’s ratio test. The Feature Matching method I implemented produced these results:</p>
+                <div class="image-gallery">
+                    <div class="gallery-item">
+                        <img src="images/doe_matches.jpg" alt=""/>
+                        <p class="caption">Left + Center matches (Red), Center + Right matches (Blue)</p>
+                    </div>
+                </div>
+            </section>
+            <section>
+                <h3>B.4: RANSAC for Robust Homography</h3>
+                <p>We can reduce the number of matches to only consider the best ones (inliers) via Random Sample Consensus (RANSAC). Implementing the algorithm as described in class, we get:</p>
+                <div class="image-gallery">
+                    <div class="gallery-item">
+                        <img src="images/doe_inliers.jpg" alt=""/>
+                        <p class="caption">Left + Center inliers (Red), Center + Right inliers (Blue)</p>
+                    </div>
+                </div>
+                <p>RANSAC was able to successfully remove outlier correspondences.</p>
+                <p>Putting parts B.1 to B.4 together, we can now adapting my code from part A.4 produce mosaics with automatic stitching. Here are the comparisons between manual and automatic stitched results:</p>
+                <h4>Doe Library</h4>
+                <div class="image-gallery">
+                  <div class="gallery-item">
+                      <img src="images/doe_mosaic_blended.jpg" alt=""/>
+                      <p class="caption">Manually stitched</p>
+                  </div>
+                </div>
+                <div class="image-gallery">
+                  <div class="gallery-item">
+                      <img src="images/doe_mosaic_auto.jpg" alt=""/>
+                      <p class="caption">Automatically stitched</p>
+                  </div>
+                </div>
+                <h4>Gilman Hall</h4>
+                <div class="image-gallery">
+                  <div class="gallery-item">
+                      <img src="images/hall_mosaic_blended.jpg" alt=""/>
+                      <p class="caption">Manually stitched</p>
+                  </div>
+                </div>
+                <div class="image-gallery">
+                  <div class="gallery-item">
+                      <img src="images/hall_mosaic_auto.jpg" alt=""/>
+                      <p class="caption">Automatically stitched</p>
+                  </div>
+                </div>
+                <h4>Strawberry Creek</h4>
+                <div class="image-gallery">
+                  <div class="gallery-item">
+                      <img src="images/creek_mosaic_blended.jpg" alt=""/>
+                      <p class="caption">Manually stitched</p>
+                  </div>
+                </div>
+                <div class="image-gallery">
+                  <div class="gallery-item">
+                      <img src="images/creek_mosaic_auto.jpg" alt=""/>
+                      <p class="caption">Automatically stitched</p>
+                  </div>
+                </div>
+                <p>The results seem similar albeit some ghosting, but the automatic stitching saved a lot of time and strain not having to manually choose the correspondences everytime.</p>
+            </section>
         </main>
     </div>
 </body>
