@@ -16,23 +16,33 @@
         <aside class="sidebar">
             <img src="images/profile.jpeg" alt="Phoenix Pham" class="profile-pic">
             <h1>Phoenix Pham</h1>
-            <p>CS 180 Fall 2025</p>
+            <a href="index.html" style="color: #ccc; text-decoration: none; font-weight: normal;">CS 180 Fall 2025</a>
             <nav>
                 <ul>
-                    <li><a href="project0.html">Project 0</a></li>
-                    <li><a href="project1.html">Project 1</a></li>
-                    <li><a href="project2.html">Project 2</a></li>
-                    <li><a href="project3.html">Project 3</a></li>
+                    <li><a href="#parta">Part A</a></li>
+                    <ul class="subsection">
+                        <li><a href="#parta-one">A.1</a></li>
+                        <li><a href="#parta-two">A.2</a></li>
+                        <li><a href="#parta-three">A.3</a></li>
+                        <li><a href="#parta-four">A.4</a></li>
+                    </ul>
+                    <li><a href="#partb">Part B</a></li>
+                    <ul class="subsection">
+                        <li><a href="#partb-one">B.1</a></li>
+                        <li><a href="#partb-two">B.2</a></li>
+                        <li><a href="#partb-three">B.3</a></li>
+                        <li><a href="#partb-four">B.4</a></li>
+                    </ul>
                 </ul>
             </nav>
         </aside>
         <main class="content">
             <h1>Project 3: (Auto)stitching and Photo Mosaics</h1>
             <a href="https://cal-cs180.github.io/fa25/hw/proj3/index.html" target="_blank" rel="noopener noreferrer">[View Assignment]</a>
-            <section>
+            <section id="parta">
                 <h2>Part A: Image Warping and Mosaicing</h2>
             </section>
-            <section>
+            <section id="parta-one">
                 <h3>A.1: Shoot the Pictures</h3>
                 <p> These are the sets of photos I took that I will be using to warp and stitch together into a mosaic (panorama).</p>
                 <h4>Doe Library</h4>
@@ -81,7 +91,7 @@
                     </div>
                 </div>
             </section>
-            <section>
+            <section id="parta-two">
                 <h3>A.2: Recover Homographies</h3>
                 <p>Using <code>numpy.linalg.lstsq</code>, I will frame the homography transformation \(p' = Hp\) as a Least Squares problem \(Ah = b\) to solve for \(h\), the flatten version of the homography matrix \(H\). This will allow to recover the parameters of the projection between pairs of images to warp them into alignment.</p>
                 <pre style="width: 50%"><code>
@@ -284,7 +294,7 @@
                     </div>
                 </div>
             </section>
-            <section>
+            <section id="parta-three">
                 <h3>A.3: Warp the Images</h3>
                 <p>Using the recovered homographies from A.2, I implemented two interpolation methods to warp the images:</p>
                 <pre style="width: 50%"><code>
@@ -469,7 +479,7 @@
                 <p>From my results, using Nearest Neighbor Interpolation was at least 2x faster without surprisingly compromising much quality compared to Bilinear Interpolation from a reasonable distance. This time difference is because for Bilinear Interpolation, you need to compute the weighted average of the neighboring pixels, whereas you can just round to the nearest pixel value in Nearest Neighbor.</p>
                 <p>In theory, Bilinear Interpolation produces smoother results and better preserves fine detail, but is slower due to the additional computations. In contrast, Nearest Neighbor Interpolation simply uses the nearest integer pixel value, which makes it faster but at the cost of image smoothness and finer detail.</p>
             </section>
-            <section>
+            <section id="parta-four">
                 <h3>A.4: Blend the Images into a Mosaic</h3>
                 <p>I used Nearest Neighbor interpolation for image warping to project each image into the coordinate frame of the center view. After computing the mosaic bounds, I created a black canvas and placed each warped image into its proper position using its calculated offset. Each image was also assigned a binary alpha mask indicating valid pixel regions.</p>
                 <p>Originally, I stitched the images together without blending by using a simple binary mask. So to blend the images, I implemented a multi-resolution 2-level Laplacian stack blending approach (use my code from Project 2). The images and their masks were downsampled to reduce computation time, and the masks were softened with Gaussian blurring to create smooth transition weights. I then blended the left and center mosaics first, and then blended that with the right image.</p>
@@ -556,11 +566,11 @@
                   </div>
                 </div>
             </section>
-            <section>
+            <section id="partb">
                 <h2>Part B: Feature Matching for Autostitching</h2>
             </section>
             <p>The algorithms used in this part follow from Brown et al.'s paper <a href="https://cal-cs180.github.io/fa25/hw/proj3/Papers/MOPS.pdf" target="_blank" rel="noopener noreferrer"><em>Multi-Image Matching using Multi-Scale Oriented Patches</em></a></p>
-            <section>
+            <section id="partb-one">
                 <h3>B.1: Harris Corner Detection</h3>
                 <p> Using the provided starter for the Harris Interest Point Detector, these are the Harris corners found on the Doe Library image set:</p>
                 <div class="image-gallery">
@@ -577,7 +587,7 @@
                     </div>
                 </div>
             </section>
-            <section>
+            <section id="partb-two">
                 <h3>B.2: Feature Descriptor Extraction</h3>
                 <p>Using the suppressed Harris corner points, I implemented Feature Descriptor extraction method to extract \(8 \times 8\) feature descriptors. Here are 7 extracted features on the Doe Library image set:</p>
                 <div class="image-gallery">
@@ -599,7 +609,7 @@
                     </div>
                 </div>
             </section>
-            <section>
+            <section id="partb-three">
                 <h3>B.3: Feature Matching</h3>
                 <p>Now being able to extract the feature descriptors in the images, for the left and right images, we will find the pairs that look most similar (feature similarlity was computed using Euclidean distance) to the center image. The matches were then filtered with Lowe’s ratio test. The Feature Matching method I implemented produced these results:</p>
                 <div class="image-gallery">
@@ -609,7 +619,7 @@
                     </div>
                 </div>
             </section>
-            <section>
+            <section id="partb-four">
                 <h3>B.4: RANSAC for Robust Homography</h3>
                 <p>We can reduce the number of matches to only consider the best ones (inliers) via Random Sample Consensus (RANSAC). Implementing the algorithm as described in class, we get:</p>
                 <div class="image-gallery">

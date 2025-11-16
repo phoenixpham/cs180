@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project 4 - Phoenix Pham</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <img src="images/profile.jpeg" alt="Phoenix Pham" class="profile-pic">
+            <h1>Phoenix Pham</h1>
+            <a href="index.html" style="color: #ccc; text-decoration: none; font-weight: normal;">CS 180 Fall 2025</a>
+            <nav>
+                <ul>
+                    <li><a href="#partzero">Part 0</a></li>
+                    <li><a href="#partone">Part 1</a></li>
+                    <li><a href="#parttwo">Part 2</a></li>
+                    <ul class="subsection">
+                        <li><a href="#parttwo-one">2.1</a></li>
+                        <li><a href="#parttwo-two">2.2</a></li>
+                        <li><a href="#parttwo-three">2.3</a></li>
+                        <li><a href="#parttwo-four">2.4</a></li>
+                        <li><a href="#parttwo-five">2.5</a></li>
+                        <li><a href="#parttwo-six">2.6</a></li>
+                    </ul>
+                </ul>
+            </nav>
+        </aside>
+        <main class="content">
+            <h1>Project 4: Neural Radiance Field!</h1>
+            <a href="https://cal-cs180.github.io/fa25/hw/proj4/index.html" target="_blank" rel="noopener noreferrer">[View Assignment]</a>
+            <section id="partzero">
+                <h2>Part 0: Camera Calibration and 3D Scanning</h2>
+            </section>
+            <p>For this part, I took a 3D scan of my own object using ArUco tags to first calibrate my camera parameters, then using them to estimate the camera pose for each image of my object. Aftwards, I undistorted my images and packaged them with the instrinsics into a dataset that will be used create a NeRF later on. There were 40 total images, with 36 being valid to use.</p>
+            <div class="image-gallery">
+                <div class="gallery-item">
+                    <img src="images/viser.png" alt=""/>
+                </div>
+            </div>
+            <div class="image-gallery">
+                <div class="gallery-item">
+                    <img src="images/viser1.png" alt=""/>
+                </div>
+            </div>
+            <section id="partone">
+                <h2>Part 1: Fit a Neural Field to a 2D Image</h2>
+            </section>
+            <p>I created a Neural Field that can represent a 2D image and optimize it to fit two different images.</p>
+            <p>The model architecture first inputs a two-dimensional pixel coordinate \((u, v)\) into a sinusoidal positional encoder (PE) to expand its dimensionality (the reconstruction below uses \(L=10\) frequencies per pixel, i.e., it maps the 2D coordinate to a 42D vector). This is then fed into a multilayer perceptron (MLP), which uses four linear layers of width 256, with the first three being followed by a ReLU activation layer, and the last layer being followed by a Sigmoid activation layer to output the three-dimensional \((r, g, b)\). Below is a visualization of the network:</p>
+            <div class="image-gallery">
+                <div class="gallery-item">
+                    <img src="images/mlp_img.jpg" alt="" style="width: 550px; height: auto;"/>
+                </div>
+            </div>
+            <p>These are the training progression of two different images over 2000 iterations. I used an Adam optimizer with a learning rate of \(0.01\) to train the network.</p>
+            <div class="image-gallery six-wide">
+                <div class="gallery-item">
+                    <img src="images/curious_iter1.jpg" alt=""/>
+                    <p class="caption">1</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="images/curious_iter50.jpg" alt=""/>
+                    <p class="caption">50</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="images/curious_iter100.jpg" alt=""/>
+                    <p class="caption">100</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="images/curious_iter200.jpg" alt=""/>
+                    <p class="caption">200</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="images/curious_iter500.jpg" alt=""/>
+                    <p class="caption">500</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="images/curious_iter2000.jpg" alt=""/>
+                    <p class="caption">2000</p>
+                </div>
+            </div>
+            <div class="image-gallery six-wide">
+                <div class="gallery-item">
+                    <img src="images/fox_iter1.jpg" alt=""/>
+                    <p class="caption">1</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="images/fox_iter50.jpg" alt=""/>
+                    <p class="caption">50</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="images/fox_iter100.jpg" alt=""/>
+                    <p class="caption">100</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="images/fox_iter200.jpg" alt=""/>
+                    <p class="caption">200</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="images/fox_iter500.jpg" alt=""/>
+                    <p class="caption">500</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="images/fox_iter2000.jpg" alt=""/>
+                    <p class="caption">2000</p>
+                </div>
+            </div>
+            <div class="image-gallery">
+                <div class="gallery-item">
+                    <img src="images/fox_psnr.jpg" alt="" style="width: 550px; height: auto;"/>
+                    <p class="caption">Training PSNR curve on fox image.</p>
+                </div>
+            </div>
+
+            <div class="grid-wrapper">
+                <!-- Column Labels -->
+                <div class="grid-label"></div>
+                <div class="grid-label">Width \(128\)</div>
+                <div class="grid-label">Width \(512\)</div>
+
+                <!-- Row 1 -->
+                <div class="grid-label">\(L=3\)</div>
+                <div class="grid-item">
+                    <img src="images/lowL_lowW.jpg" alt="">
+                </div>
+                <div class="grid-item">
+                    <img src="images/lowL_highW.jpg" alt="">
+                </div>
+
+                <!-- Row 2 -->
+                <div class="grid-label">\(L=15\)</div>
+                <div class="grid-item">
+                    <img src="images/highL_lowW.jpg" alt="">
+                </div>
+                <div class="grid-item">
+                    <img src="images/highL_highW.jpg" alt="">
+                </div>
+                </div>
+
+            <section id="parttwo">
+                <h2>Part 2: Fit a Neural Radiance Field from Multi-view Images</h2>
+            </section>
+            <section id="parttwo-one">
+                <h3>Part 2.1: Create Rays from Cameras</h3>
+                <section>
+                    <h4>Camera to World Coordinate Conversion</h4>
+                    <p>The transformation between the world space and the camera space, which is defined by the world-to-camera transformation (extrinsic) matrix, \(\text{w2c} = \begin{bmatrix} \mathbf{R}_{3\times3} & \mathbf{t} \\ \mathbf{0}_{1\times3} & 1 \end{bmatrix}\), is:</p>
+                    <div style="text-align: center;">
+                        <p>
+                            \(\begin{align} 
+                                \begin{bmatrix} x_c \\ y_c \\ z_c \\ 1 \end{bmatrix} = \begin{bmatrix} \mathbf{R}_{3\times3} & \mathbf{t} \\ \mathbf{0}_{1\times3} & 1 \end{bmatrix} \begin{bmatrix} x_w \\ y_w \\ z_w \\ 1 \end{bmatrix}
+                            \end{align}\)
+                        </p>
+                    </div>
+                    <p>The inverse of the extrinsic matrix \(\text{w2c}\) is called the camera-to-world transformation matrix \(\text{c2w}\). I implemented a function <code> X_w = transform(c2w, X_c)</code> that uses the \(\text{c2w}\) matrix to transform a point from camera \(\mathbf{X_c} = \begin{bmatrix} x_c & y_c & z_c \end{bmatrix}^\top \) to world space \(\mathbf{X_w} = \begin{bmatrix} x_w & y_w & z_w \end{bmatrix}^\top\).</p>
+                    <p>Each camera-space point \(\mathbf{X_c}\) is augmented with a homogeneous coordinate (by appending 1) to form \(\mathbf{X_{c_h}}= \begin{bmatrix} x_c & y_c & z_c & 1 \end{bmatrix}^\top\). The code then performs a batch matrix multiplication:</p>
+                    <div style="text-align: center;">
+                        <code>x_w_h = torch.bmm(c2w, x_c_h)</code>
+                    </div>
+                    <p>
+                    The result <code>x_w_h</code> represents the same points expressed in world coordinates \(\mathbf{X_{w_h}}\). After dropping the homogeneous coordinate, I obtained the transformed 3D positions in world-space \(\mathbf{X_w}\).</p>
+                </section>
+                <section>
+                    <h4>Pixel to Camera Coordinate Conversion</h4>
+                    <p>The transformation between the 2D pixel coordinate system to the camera coordinate system is</p>
+                    <div style="text-align: center;">
+                        <p>
+                            \(\begin{align} 
+                                s \begin{bmatrix} u \\ v \\ 1 \end{bmatrix} = \mathbf{K} \begin{bmatrix} x_c \\ y_c \\ z_c \end{bmatrix} 
+                            \end{align}\),
+                        </p>
+                    </div>
+                    <p>for some intrinsic matrix</p>
+                    <div style="text-align: center;">
+                        <p>
+                            \(\begin{align}
+                                \mathbf{K} = \begin{bmatrix} f_x & 0 & o_x \\ 0 & f_y & o_y \\ 0 & 0 & 1 \end{bmatrix} 
+                            \end{align}\),
+                        </p>
+                    </div>
+                    where \((o_x, o_y)\) is the principal point, \((f_x, f_y)\) are the focal lengths in pixel units along the \(x\) and \(y\) axes respectively, and \(s=z_c\) is the depth of this point along the optical axis. I implemented a function <code> X_c = pixel_to_camera(K, uv, s)</code> that uses the intrinsic matrix \(\mathbf{K}\) to transform a pixel coordinate \(\begin{bmatrix} u & v \end{bmatrix}^\top\) with a given depth value \(s\) to a camera-space coordinate \(\mathbf{X_c} = \begin{bmatrix} x_c & y_c & z_c \end{bmatrix}^\top\).</p>
+                    <p>The homogeneous pixel coordinates \(\begin{bmatrix} u & v & 1 \end{bmatrix}^\top\) are multiplied by the inverse of the intrinsic matrix \(\mathbf{K}^{-1}\):</p>
+                    <div style="text-align: center;">
+                        <code>x_c = torch.bmm(K_inv, uv_h)</code>
+                    </div>
+                    <p>This yields points on the camera plane (in units of depth <code>s</code>) measured along the camera's optical axis. Each pixel now corresponds to a direction vector in camera space pointing away from the camera center.</p>
+                </section>
+                <section>
+                    <h4>Pixel to Ray</h4>
+                    <p>Finally, I implemented <code>ray_o, ray_d = pixel_to_ray(K, c2w, uv)</code>, that utilizes <code>pixel_to_camera</code> and <code>transform</code> to convert a pixel coordinate \(\begin{bmatrix} u & v & 1 \end{bmatrix}^\top\) to a ray with an origin vector \(\mathbf{r}_o\), which is simply the translation component \(\mathbf{t}\) in the \(\text{c2w}\) transformation matrix, and a normalized direction vector \(\begin{align} \mathbf{r}_d = \frac{\mathbf{X_w} - \mathbf{r}_o}{||\mathbf{X_w} - \mathbf{r}_o||_2} \end{align}\).</p>
+                    <p>Specifically, it first calls <code>pixel_to_camera</code> to convert pixels to camera-space coordinates, then uses <code>transform</code> to convert those to world coordinates. The ray origin <code>ray_o</code> is taken directly from the camera translation component <code>c2w[:, :3, 3]</code>, and the ray direction <code>ray_d = (x_w − ray_o)</code> is normalized to unit length:</p>
+                    <div style="text-align: center;">
+                        <code>ray_d = ray_d / torch.norm(ray_d, dim=-1, keepdim=True)</code>
+                    </div>
+                    <p>This produces a pair of tensors <code>(ray_o, ray_d)</code> for every pixel, representing the origins and normalized directions of all rays emitted from the camera through the image plane. These rays are later used for sampling along 3D volumes in the NeRF rendering pipeline.</p>
+                </section>
+                
+            </section>
+            <section id="parttwo-two">
+                <h3>Part 2.2: Sampling</h3> 
+                <section>
+                    <h4>Sampling Rays from Images</h4>
+                    <p>I implemented a PyTorch <code>Dataset</code> class, <code>RaysData</code>, to represent all camera rays and corresponding pixel colors across multiple training images. The class encapsulates the relationship between image pixels, camera parameters, and their corresponding world-space rays. It takes as input:</p>
+                    <ul>
+                        <li><code>images</code>: a tensor of shape <code>(B, H, W, 3)</code> containing RGB images</li>
+                        <li><code>K</code>: the \(3 \times 3\) intrinsic matrix</li>
+                        <li><code>c2ws</code>: the camera-to-world extrinsic matrices for each image</li>
+                        <li><code>device</code>: either <code>"cpu"</code> or <code>"cuda"</code>.</li>
+                    </ul>
+                    <p>Each image pixel color is flattened into a long tensor to do a global ray sampling from all images (use for the <code>sample_rays</code> method). Then a full grid of pixel coordinates \(\begin{bmatrix} u & v \end{bmatrix}^\top\) is generated for every image using <code>torch.meshgrid()</code>, and a <code>+0.5</code> offset is added to center the ray at the middle of each pixel. These pixel coordinates are then converted into 3D rays using <code>pixel_to_ray</code>, which applies both intrinsic and extrinsic transformations to produce the ray origin and normalized ray direction vectors. Finally, both are also flattened so each pixel in all images corresponds to one ray.</p>
+                    <p>The <code>RaysData</code> class contains these methods:</p>
+                    <ul>
+                        <li><code>sample_rays(N)</code>: selects \(N\) random rays from the total set, returning their origins, directions, and ground-truth pixel colors</li>
+                        <li><code>sample_rays_from_one_image()</code>: randomly selects one full image and returns all rays and pixels from that view; mainly used for generating <em>novel view reconstructions</em> or evaluation renderings</li>
+                        <li><code>get_rays_from_c2w(c2w)</code>: generates rays for any new camera pose <code>c2w</code>, as it constructs pixel grids for that image and uses <code>pixel_to_ray()</code> to map them to world-space rays; used for rendering test or synthetic views (e.g., orbiting around the object).</li>
+                    </ul>
+                </section>
+                <section>
+                    <h4>Sampling Points along Rays</h4>
+                    <p>I then implemented <code>sample_along_rays</code> to generate 3D sample points along each ray between the near and far bounds. This function creates evenly spaced 3D sample points along each ray between the near and far clipping planes. It defines a set of depth values <code>t</code> between <code>near</code> and <code>far</code> using <code>torch.linspace(near, far, n_samples)</code>.</p>
+                    <p>If <code>perturb=True</code>, random noise is added to <code>t</code> to introduce jitter for stratified sampling, improving rendering smoothness:</p>
+                    <div style="text-align: center;">
+                        <code>t = t + torch.rand(t.shape) * (far - near) / n_samples</code>
+                    </div>
+                    <p>Then each 3D coordinate is then computed as</p>
+                    <div style="text-align: center;">
+                        <p>
+                            \(\begin{align} 
+                                \mathbf{x} = \mathbf{R}_o + \mathbf{R}_d * t
+                            \end{align}\),
+                        </p>
+                    </div>
+                    <p>This yields a tensor of shape <code>(N, n_samples, 3)</code> containing all the sample positions along each ray, which are later passed through the NeRF model to predict color and density values.</p>
+                </section>
+            </section>
+            <section id="parttwo-three">
+                <h3>Part 2.3: Putting the Dataloading All Together</h3>
+                <p>Using the provided visualization code, I plotted the cameras, rays, and samples in 3D of the lego dataset to verify that Part 2.1 and 2.2 have been done correctly.</p>
+                <div class="image-gallery">
+                    <div class="gallery-item">
+                        <img src="images/part-two-three.png" alt=""/>
+                        <p class="caption">Rays sampled from every camera.</p>
+                    </div>
+                </div>
+                <div class="image-gallery">
+                    <div class="gallery-item">
+                        <img src="images/part-two-three1.png" alt=""/>
+                        <p class="caption">Rays sampled from one camera.</p>
+                    </div>
+                </div>
+            </section>
+            <section id="parttwo-four">
+                <h3>Part 2.4: Neural Radiance Field</h3>
+                <p>To create the NeRF, using the same ideas to the MLP in Part 1, I first implemented a deeper MLP, <code>NeuralRadianceField</code>, to predict the density and color of the sampled 3D points on the rays. Below is a visualization of the network:</p>
+                <div class="image-gallery">
+                    <div class="gallery-item">
+                        <img src="images/mlp_nerf.png" alt="" style="width: 600px; height: auto;"/>
+                    </div>
+                </div>
+                <p>
+                The <code>NeuralRadianceField</code> model uses <strong>positional encoding</strong> to map both 3D coordinates and ray directions into a higher-dimensional space, allowing the network to learn high-frequency details. 
+                Two separate encoders (<code>coord_pe</code> and <code>ray_d_pe</code>) are applied before passing the inputs through multiple MLP blocks.
+                </p>
+                <p>
+                The first MLP block (<code>mlp_block1</code>) extracts spatial features from the encoded 3D positions, while the second block (<code>mlp_block2</code>) refines them after concatenation with the original positional encoding. 
+                The network then branches into two outputs:
+                </p>
+                <ul>
+                <li><strong>Density (\(\sigma\)):</strong> predicted by <code>density_layer</code>, representing the volume density of each point along the ray.</li>
+                <li><strong>Color (RGB):</strong> predicted by <code>rgb_layer_block1</code> and <code>rgb_layer_block2</code>, which combine spatial features with the encoded ray direction.</li>
+                </ul>
+                <p>
+                This architecture allows the model to represent a continuous volumetric field that can synthesize novel views of the scene by integrating colors and densities along sampled rays.
+                </p>
+
+            </section>
+            <section id="parttwo-five">
+                <h3>Part 2.5: Volume Rendering</h3>
+                <p>After the MLP outputs the color (RGB) and density (\(\sigma\)), the NeRF renders the color using the volume rendering equation:</p>
+                <div style="text-align: center;">
+                    <p>
+                        \(\begin{align} C(\mathbf{r})=\int_{t_n}^{t_f} T(t)
+                            \sigma(\mathbf{r}(t))
+                            \mathbf{c}(\mathbf{r}(t), \mathbf{d}) d t, \text { where } T(t)=\exp \left(-\int_{t_n}^t \sigma(\mathbf{r}(s)) d
+                            s\right)
+                        \end{align}\)
+                    </p>
+                </div>
+                <p>I implemented the discrete appromixation of it,</p>
+                <div style="text-align: center;">
+                    <p>
+                        \(\begin{align}
+                            \hat{C}(\mathbf{r})=\sum_{i=1}^N T_i\left(1-\exp \left(-\sigma_i \delta_i\right)\right) \mathbf{c}_i, \text { where } T_i=\exp\left(-\sum_{j=1}^{i-1} \sigma_j \delta_j\right) 
+                        \end{align}\),
+                    </p>
+                </div>
+                <p>for a batch of samples along a ray, as <code>volrend(sigmas, rgbs, step_size)</code>. In the implementation, <code>sigmas</code> represents the predicted densities and <code>rgbs</code> the corresponding colors for each sampled point along a ray. The function first converts densities into alpha values using the relation <code>alpha = 1 - exp(-sigma * step_size)</code>, which represents the probability of light being absorbed at each sample.</p>
+                <p>Next, cumulative transmittance <code>T_i</code> is computed using a running product of <code>(1 - alpha)</code> via <code>torch.cumprod()</code>, ensuring that each point's contribution accounts for how much light has been absorbed before reaching it. The element-wise product of <code>T_i</code> and <code>alpha</code> gives the sample weights.</p>
+                <p>Finally, the rendered color for each ray is obtained by summing the weighted colors along the ray:</p>
+                <div style="text-align: center;">
+                        <code>rendered_colors = torch.sum(weights * rgbs, dim=1)</code>
+                    </div>
+                <p>This produces the final pixel color, effectively simulating how light accumulates through a semi-transparent volume.</p>
+                <p>Putting all of this together, I fed the lego dataset into the NeRF. Below are the training progression over 3000 iterations of one of the cameras. Again, I used an Adam optimizer with a learning rate of \(0.0005\) to train the network.</p>
+                <div class="image-gallery six-wide">
+                    <div class="gallery-item">
+                        <img src="images/lego_iter1.jpg" alt=""/>
+                        <p class="caption">1</p>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="images/lego_iter50.jpg" alt=""/>
+                        <p class="caption">50</p>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="images/lego_iter100.jpg" alt=""/>
+                        <p class="caption">100</p>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="images/lego_iter200.jpg" alt=""/>
+                        <p class="caption">200</p>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="images/lego_iter1000.jpg" alt=""/>
+                        <p class="caption">1000</p>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="images/lego_iter3000.jpg" alt=""/>
+                        <p class="caption">3000</p>
+                    </div>
+                </div>
+                <div class="image-gallery">
+                    <div class="gallery-item">
+                        <img src="images/lego_psnr.jpg" alt="" style="width: 500px; height: auto;"/>
+                        <p class="caption">Validation PSNR curve on the lego.</p>
+                    </div>
+                </div>
+                <p>After training the network, I created a rendering of the lego from arbitrary camera extrinsics (<code>c2ws_test</code> provided in the .npz file).</p>
+                <div class="image-gallery">
+                    <div class="gallery-item">
+                        <img src="images/lego_render.gif" alt="" class="gif-small"/>
+                    </div>
+                </div>
+            </section>
+            <section id="parttwo-six">
+                <h3>Part 2.6: Training with My Own Data</h3>
+                <p>Now I created a NeRF using the dataset I generated in Part 0. I trained a NeRF with these parameters:</p>
+                <ul>
+                    <li>Number of samples per ray: 96</li>
+                    <li>Number of iterations: 3000</li>
+                    <li>Batch size: 10000</li>
+                    <li>Near plane: 0.02</li>
+                    <li>Far plane: 0.5</li>
+                    <li>Learning rate: 0.0005</li>
+                </ul>
+                <p>The MLP architecture used is the same. I kept all the previous hyperparameters the same as I did for the lego dataset, but decreased the sampling rate per ray to \(96\) in hopes it would produce a better reconstruction. Here is the training progression over 3000 iterations of one of the cameras.</p>
+                <div class="image-gallery six-wide">
+                    <div class="gallery-item">
+                        <img src="images/reconst_iter223.jpg" alt=""/>
+                        <p class="caption">223</p>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="images/reconst_iter334.jpg" alt=""/>
+                        <p class="caption">334</p>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="images/reconst_iter667.jpg" alt=""/>
+                        <p class="caption">667</p>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="images/reconst_iter1000.jpg" alt=""/>
+                        <p class="caption">1000</p>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="images/reconst_iter2000.jpg" alt=""/>
+                        <p class="caption">2000</p>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="images/reconst_iter3000.jpg" alt=""/>
+                        <p class="caption">3000</p>
+                    </div>
+                </div>
+                <div class="image-gallery">
+                    <div class="gallery-item">
+                        <img src="images/psnr_training_plot.jpg" alt=""/>
+                        <p class="caption">Training PSNR curve on my object.</p>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="images/loss_plot.jpg" alt=""/>
+                        <p class="caption">Training loss on my object.</p>
+                    </div>
+                </div>
+                <p>After training the network, I used my test camera extrinsic (from my dataset as <code>c2ws_test</code>) to generate 60 synthetic views rotating around my object to create a 3D rendering. Here is the result:</p>
+                <div class="image-gallery">
+                    <div class="gallery-item">
+                        <img src="images/orbit.gif" alt="" class="gif-small"/>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>
