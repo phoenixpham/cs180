@@ -262,27 +262,33 @@ video {
 
 .grid-wrapper {
   display: grid;
-  grid-template-columns: auto 1fr 1fr; /* label, col1, col2 */
-  grid-template-rows: auto 1fr 1fr;    /* label, row1, row2 */
+  grid-template-columns: auto 1fr 1fr;  /* Row labels + 2 image columns */
+  grid-template-rows: auto 1fr 1fr;     /* Column labels + 2 image rows */
+  gap: 10px;
   align-items: center;
+  justify-items: center;
   margin: 2rem 0;
 }
 
 .grid-label {
   font-weight: bold;
   text-align: center;
+  padding: 0.5rem;
 }
 
 .grid-item {
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .grid-item img {
   width: 100%;
-  max-width: 200px;
+  max-width: 160px;  /* Shrink a bit for better printability */
   height: auto;
   display: block;
-  margin: 0 auto;
+  margin-bottom: 5px;
 }
 
 .caption {
@@ -367,4 +373,71 @@ video {
         font-size: 14px;
         padding: 8px;
     }
+}
+
+@media print {
+  body {
+    margin: 0;
+    padding: 0;
+    font-size: 12pt;
+    color: #000;
+    background: #fff;
+  }
+
+  .container {
+    display: block !important; /* Avoid flex/grid for printing if misbehaving */
+    width: 100%;
+  }
+
+  .sidebar {
+    display: none; /* Optional: hide sidebar when printing */
+  }
+
+  .content {
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .image-gallery {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .gallery-item {
+    flex: 1 0 45%; /* 2 columns max */
+    page-break-inside: avoid;
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+    page-break-inside: avoid;
+  }
+
+  h1, h2, h3 {
+    page-break-after: avoid;
+  }
+
+  a {
+    color: black;
+    text-decoration: none;
+  }
+
+  nav,
+  .sidebar,
+  .footer {
+    display: none !important;
+  }
+  
+  .grid-wrapper {
+    width: 100%;
+    page-break-inside: avoid;
+  }
+
+  .grid-item img {
+    max-width: 140px;
+    page-break-inside: avoid;
+  }
 }
