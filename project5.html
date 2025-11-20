@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project 5 - Phoenix Pham</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <img src="images/profile.jpeg" alt="Phoenix Pham" class="profile-pic">
+            <h1>Phoenix Pham</h1>
+            <a href="index.html" style="color: #ccc; text-decoration: none; font-weight: normal;">CS 180 Fall 2025</a>
+            <nav>
+                <ul>
+                    <li><a href="#part-a">Part A</a></li>
+                    <ul class="subsection">
+                        <li><a href="#part-a-zero">Part 0</a></li>
+                        <li><a href="#part-a-one">Part 1</a></li>
+                        <ul class="subsection">
+                            <li><a href="#part-a-one-one">1.1</a></li>
+                            <li><a href="#part-a-one-two">1.2</a></li>
+                            <li><a href="#part-a-one-three">1.3</a></li>
+                            <li><a href="#part-a-one-four">1.4</a></li>
+                            <li><a href="#part-a-one-five">1.5</a></li>
+                            <li><a href="#part-a-one-six">1.6</a></li>
+                            <li><a href="#part-a-one-seven">1.7</a></li>
+                            <li><a href="#part-a-one-eight">1.8</a></li>
+                            <li><a href="#part-a-one-nine">1.9</a></li>
+                        </ul>
+                    </ul>
+                </ul>
+            </nav>
+        </aside>
+        <main class="content">
+            <h1>Project 5: Fun With Diffusion Models!</h1>
+            <a href="https://cal-cs180.github.io/fa25/hw/proj5/index.html" target="_blank" rel="noopener noreferrer">[View Assignment]</a>
+            <section id="part-a">
+                <h1>Part A: The Power of Diffusion Models!</h1>
+            </section>
+            <section id="part-a-zero">
+                <h2>Part 0: Setup</h2>
+                <p>These are the text prompts (along with their generated prompt embeddings) I will be using for the <a href="https://www.google.com/url?q=https%3A%2F%2Fhuggingface.co%2Fdocs%2Fdiffusers%2Fapi%2Fpipelines%2Fdeepfloyd_if" target="_blank" rel="noopener noreferrer">DeepFloyd IF</a> diffusion model:</p>
+                <ul>
+                    <li>"A high quality picture"</li>
+                    <li>“An oil painting of a skeleton smoking a cigarette”</li>
+                    <li>“A photo of the Lake Lugano”</li>
+                    <li>“A photo of Sisyphus pushing up a boulder up a hill”</li>
+                    <li>“A photo of a monkey playing poker”</li>
+                    <li>“A sky view of San Francisco”</li>
+                    <li>“An oil painting of a goat”</li>
+                    <li>“An oil painting of LeBron James”</li>
+                    <li>“A mosaic of a waterfall”</li>
+                    <li>“A lithograph of a cat”</li>
+                    <li>"A bald man wearing a toupee"</li>
+                    <li>"A high quality photo"</li>
+                    <li>"An UFO"</li>
+                    <li>"A guitar"</li>
+                    <li>""</li>
+                </ul>
+                <p>The "A high quality picture" and "" prompts used later for unconditional generation.</p>
+                <p><strong>Note:</strong> I will be using set random seed \(100\) for all the results.</p>
+                <h4><code style="font-size: 1.2em;">num_inference_steps=20</code></h4>
+                <div class="image-gallery">
+                    <div class="gallery-item">
+                        <img src="images/sisyphus_inference_steps_20.png" alt=""/>
+                        <p class="caption">A photo of Sisyphus pushing up a boulder up a hill</p>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="images/monkey_inference_steps_20.png" alt=""/>
+                        <p class="caption">A photo of a monkey playing poker</p>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="images/ufo_inference_steps_20.png" alt=""/>
+                        <p class="caption">An UFO</p>
+                    </div>
+                </div>
+                <h4><code style="font-size: 1.2em;">num_inference_steps=100</code></h4>
+                <div class="image-gallery">
+                    <div class="gallery-item">
+                        <img src="images/sisyphus_inference_steps_100.png" alt=""/>
+                        <p class="caption">A photo of Sisyphus pushing up a boulder up a hill</p>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="images/monkey_inference_steps_100.png" alt=""/>
+                        <p class="caption">A photo of a monkey playing poker</p>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="images/ufo_inference_steps_100.png" alt=""/>
+                        <p class="caption">An UFO</p>
+                    </div>
+                </div>
+                <p>The quality of the outputs for <code>num_inference_steps=100</code> are much more realistic than <code>num_inference_steps=20</code> (e.g., the Sisyphus and UFO images seem surrealistic and a bit uncanny). The results do reflect the associated text prompts, but for instance in the Sisyphus image for <code>num_inference_steps=20</code>, it is much harder to discern without context.</p>
+            </section>
+            <section id="part-a-one">
+                <h2>Part 1: Sampling Loops</h2> 
+                <section id="part-a-one-one">
+                    <h3>1.1 Implementing the Forward Process</h3>
+                    <p>The forward process for diffusion is defined by:</p>
+                    <div style="text-align: center;">
+                        <p>
+                            \(\begin{align} 
+                                x_t = \sqrt{\bar\alpha_t} x_0 + \sqrt{1 - \bar\alpha_t} \epsilon \quad \text{where}~ \epsilon \sim N(0, 1)
+                            \end{align}\)
+                        </p>
+                    </div>
+                    <p>for a given clean image \(x_0\) and noise coefficient \(\bar{\alpha}_t\) at timestep \(t\). And so I implemented this forward process as a function that takes in an image <code>im</code> and timestep <code>t</code>:</p>
+                    <pre style="width: 50%"><code>
+                        def forward(im, t):
+                            with torch.no_grad():
+                                alpha_t = alphas_cumprod[t]
+                                eps = torch.randn_like(im)
+                                im_noisy = torch.sqrt(alpha_t)*im + torch.sqrt(1-alpha_t)*eps
+                            return im_noisy
+                    </code></pre>
+                    <p>I ran the forward process on the Campanile test image with \(t \in [250, 500, 700]\):</p>
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/campanile.png" alt="" style="width: 25%;"/>
+                            <p class="caption">Original</p>
+                        </div>
+                    </div>
+                    <div class="image-gallery four-wide">
+                        <div class="gallery-item">
+                            <img src="images/campanile_noisy250.png" alt="" style="width: 75%;"/>
+                            <p class="caption">Noisy Campanile at \(t=250\)</p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/campanile_noisy500.png" alt="" style="width: 75%;"/>
+                            <p class="caption">Noisy Campanile at \(t=500\)</p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/campanile_noisy750.png" alt="" style="width: 75%;"/>
+                            <p class="caption">Noisy Campanile at \(t=750\)</p>
+                        </div>
+                    </div>                    
+                </section>
+                <section id="part-a-one-two">
+                    <h3>1.2 Classical Denoising</h3>
+                    <p>I will try to denoise the images using classic Gaussian blur filtering:</p>
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/campanile_noisy250.png" alt="" style="width: 75%;"/>
+                            <p class="caption">Noisy Campanile at \(t=250\)</p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/campanile_noisy500.png" alt="" style="width: 75%;"/>
+                            <p class="caption">Noisy Campanile at \(t=500\)</p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/campanile_noisy750.png" alt="" style="width: 75%;"/>
+                            <p class="caption">Noisy Campanile at \(t=750\)</p>
+                        </div>
+                    </div>
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/campanile_gaussian250.png" alt="" style="width: 75%;"/>
+                            <p class="caption">Gaussian Blur Denoising \(t=250\)</p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/campanile_gaussian500.png" alt="" style="width: 75%;"/>
+                            <p class="caption">Gaussian Blur Denoising \(t=500\)</p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/campanile_gaussian750.png" alt="" style="width: 75%;"/>
+                            <p class="caption">Gaussian Blur Denoising at \(t=750\)</p>
+                        </div>
+                    </div>           
+                </section>
+                <section id="part-a-one-three">
+                    <h3>1.3 One-Step Denoising</h3>
+                    <p>Now, I'll use a pretrained diffusion model to denoise the 3 noisy Campanile images (\(t = [250, 500, 750]\)) by using my <code>forward</code> function to add noise to each image, pass each through the first stage of a UNet to estimate the noise in the new noisy image, and then remove the noise from each noisy image to obtain an estimate of each of the original images.</p>
+                    <p>Here are the comparisons from the original image, noisy image, and estimate of the original images for each \(t = [250, 500, 750]\):</p>
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/campanile.png" alt="" style="width: 25%;"/>
+                            <p class="caption">Original</p>
+                        </div>
+                    </div>
+                    <div class="image-gallery four-wide">
+                        <div class="gallery-item">
+                            <img src="images/campanile_noisy250.png" alt="" style="width: 70%;"/>
+                            <p class="caption">Noisy Campanile at \(t=250\)</p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/campanile_noisy500.png" alt="" style="width: 75%;"/>
+                            <p class="caption">Noisy Campanile at \(t=500\)</p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/campanile_noisy750.png" alt="" style="width: 75%;"/>
+                            <p class="caption">Noisy Campanile at \(t=750\)</p>
+                        </div>
+                    </div> 
+                    <div class="image-gallery four-wide">
+                        <div class="gallery-item">
+                            <img src="images/campanile_denoised250.png" alt="" style="width: 75%;"/>
+                            <p class="caption">One-Step Denoised Campanile at \(t=250\)</p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/campanile_denoised500.png" alt="" style="width: 75%;"/>
+                            <p class="caption">One-Step Denoised Campanile at \(t=500\)</p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/campanile_denoised750.png" alt="" style="width: 75%;"/>
+                            <p class="caption">One-Step Denoised Campanile at \(t=750\)</p>
+                        </div>
+                    </div> 
+                </section>
+                <section id="part-a-one-four">
+                    <h3>1.4 Iterative Denoising</h3>
+                    <p>We can improve the one-step denoiser from Part 1.3 by implementing an iterative denoiser <code>iterative_denoise</code>. To save time and computational cost, I used a strided step of \(30\) starting at timestep \(990\) to denoise to timestep \(0\). At each denoising step, we use the following formula:</p>
+                    <div style="text-align: center;">
+                        <p>
+                            \(\begin{align} 
+                                x_{t'} = \frac{\sqrt{\bar\alpha_{t'}}\beta_t}{1 - \bar\alpha_t} x_0 + \frac{\sqrt{\alpha_t}(1 - \bar\alpha_{t'})}{1 - \bar\alpha_t} x_t + v_\sigma
+                            \end{align}\)
+                        </p>
+                    </div>
+                    <p>where:</p>
+                    <ul>
+                        <li>\(x_t\) is your image at timestep \(t\)</li>
+                        <li>\(x_{t'}\) is your noisy image at timestep \(t'\) where \(t' < t\) (less noisy)</li>
+                        <li>\(\bar\alpha_t\) is the noise coefficient at timestep \(t\)</li>
+                        <li>\(\alpha_t = \bar\alpha_t / \bar\alpha_{t'}\)</li>
+                        <li>\(\beta_t = 1 - \alpha_t\)</li>
+                        <li>\(x_0\) is our current estimate of the clean image</li>
+                    </ul>
+                    <p>This is what <code>iterative_denoise</code> looks like:</p>
+                    <pre style="width: 50%"><code>
+                    def iterative_denoise(im_noisy, i_start, prompt_embeds, timesteps):
+                        image = im_noisy
+
+                        with torch.no_grad():
+                            for i in range(i_start, len(timesteps) - 1):
+                                t = timesteps[i]
+                                prev_t = timesteps[i+1]
+
+                                alpha_cumprod = alphas_cumprod[t]
+                                alpha_cumprod_prev = alphas_cumprod[prev_t]
+                                alpha = alpha_cumprod / alpha_cumprod_prev
+                                beta = 1 - alpha
+
+                                model_output = stage_1.unet(
+                                    image.half().to(device),
+                                    t,
+                                    encoder_hidden_states=prompt_embeds,
+                                    return_dict=False
+                                )[0]
+
+                                noise_est, predicted_variance = torch.split(model_output, image.shape[1], dim=1)
+
+                                clean_t_step = (image - torch.sqrt(1-alpha_cumprod)*noise_est) / torch.sqrt(alpha_cumprod)
+                                pred_prev_image = ((torch.sqrt(alpha_cumprod_prev)*beta)/(1-alpha_cumprod))*clean_t_step 
+                                                    + ((torch.sqrt(alpha)*(1-alpha_cumprod_prev))/(1-alpha_cumprod))*image
+                                pred_prev_image = add_variance(predicted_variance.to('cpu'), 
+                                                                torch.tensor([t]),
+                                                                pred_prev_image.to('cpu'))
+
+                                image = pred_prev_image.to(device).half()
+
+                            clean = image.cpu().detach().numpy()
+
+                        return clean
+                    </code></pre>
+                
+                    <p>Here are the results of the iterative denoising, as well as a comparison to the denoised estimations from the previous parts:</p>
+                    <div class="image-gallery six-wide">
+                        <div class="gallery-item">
+                            <img src="images/campanile_denoised690.png" alt=""/>
+                            <p class="caption">Noisy Campanile at \(t=690\)</p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/campanile_denoised540.png" alt=""/>
+                            <p class="caption">Noisy Campanile at \(t=540\)</p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/campanile_denoised390.png" alt=""/>
+                            <p class="caption">Noisy Campanile at \(t=390\)</p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/campanile_denoised240.png" alt=""/>
+                            <p class="caption">Noisy Campanile at \(t=240\)</p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/campanile_denoised90.png" alt=""/>
+                            <p class="caption">Noisy Campanile at \(t=90\)</p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/campanile_iteratively_denoised.png" alt=""/>
+                            <p class="caption">Iteratively Denoised Campanile</p>
+                        </div>
+                    </div> 
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/campanile.png" alt="" style="width: 50%;"/>
+                            <p class="caption">Original</p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/campanile_one_step_denoised.png" alt="" style="width: 50%;"/>
+                            <p class="caption">One-Step Denoised Campanile</p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/campanile_gaussian_blurred.png" alt="" style="width: 50%;"/>
+                            <p class="caption">Gaussian Blurred Campanile</p>
+                        </div>
+                    </div> 
+                </section>
+                <section id="part-a-one-five">
+                    <h3>1.5 Diffusion Model Sampling</h3>
+                    <p>I will use the <code>iterative_denoise</code> function to now generate images from scratch. Setting the starting timestep index to \(0\) and inputting random noise image into <code>iterative_denoise</code>, these are five results of the prompt <code>"a high quality photo"</code>:</p>
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/random_1.png" alt="" style="width: 75%;"/>
+                            <p class="caption">Sample 1</p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/random_2.png" alt="" style="width: 75%;"/>
+                            <p class="caption">Sample 2</p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/random_3.png" alt="" style="width: 75%;"/>
+                            <p class="caption">Sample 3</p>
+                        </div>
+                    </div>
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/random_4.png" alt="" style="width: 50%;"/>
+                            <p class="caption">Sample 4</p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/random_5.png" alt="" style="width: 50%;"/>
+                            <p class="caption">Sample 5</p>
+                        </div>
+                    </div> 
+                </section>
+                <section id="part-a-one-six">
+                    <h3>1.6 Classifier-Free Guidance (CFG)</h3>
+                    <p>In order to greatly improve image quality (at the expense of image diversity), we can use a technique called <a href="https://arxiv.org/abs/2207.12598" target="_blank" rel="noopener noreferrer">Classifier-Free Guidance</a>. Now, we compute both a conditional noise estimate \(\epsilon_c\) and an unconditional noise estimate \(\epsilon_u\). Then, we let our new noise estimate be:</p>
+                    <div style="text-align: center;">
+                        <p>
+                            \(\begin{align} 
+                                \epsilon = \epsilon_u + \gamma(\epsilon_c - \epsilon_u)
+                            \end{align}\)
+                        </p>
+                    </div>
+                    <p>where \(\gamma\) controls the strength of CFG (I used \(\gamma=7\)). To get an unconditional noise estimate, we can just pass an empty prompt embedding of <code>""</code> to the diffusion model. Here is my implementation of <code>iterative_denoise_cfg</code>, which is almost identical to <code>iterative_denoise</code>:</p>
+                    <pre style="width: 50%"><code>
+                        def iterative_denoise_cfg(im_noisy, i_start, prompt_embeds, uncond_prompt_embeds, timesteps, scale=7):
+                            image = im_noisy
+
+                            with torch.no_grad():
+                                for i in range(i_start, len(timesteps) - 1):
+                                    ...
+
+                                    model_output = stage_1.unet(
+                                        image.half().to(device),
+                                        t,
+                                        encoder_hidden_states=prompt_embeds,
+                                        return_dict=False
+                                    )[0]
+
+                                    uncond_model_output = stage_1.unet(
+                                        image.half().to(device),
+                                        t,
+                                        encoder_hidden_states=uncond_prompt_embeds,
+                                        return_dict=False
+                                    )[0]
+
+                                    noise_est, predicted_variance = torch.split(model_output, image.shape[1], dim=1)
+                                    uncond_noise_est, _ = torch.split(uncond_model_output, image.shape[1], dim=1)
+
+                                    cfg_noise_est = uncond_noise_est + scale*(noise_est - uncond_noise_est)
+
+                                    clean_t_step = (image - torch.sqrt(1-alpha_cumprod)*cfg_noise_est) / torch.sqrt(alpha_cumprod)
+                                    pred_prev_image = ((torch.sqrt(alpha_cumprod_prev)*beta)/(1-alpha_cumprod))*clean_t_step 
+                                                        + ((torch.sqrt(alpha)*(1-alpha_cumprod_prev))/(1-alpha_cumprod))*image
+                                    pred_prev_image = add_variance(predicted_variance.to('cpu'), 
+                                                                   torch.tensor([t]), 
+                                                                   pred_prev_image.to('cpu'))
+
+                                    image = pred_prev_image.half().to(device)
+
+                                clean = image.cpu().detach().numpy()
+
+                            return clean
+                    </code></pre>
+                    <p>Here are five images of <code>"a high quality photo"</code> with a CFG scale of \(\gamma=7\):</p>
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/random_cfg_1.png" alt="" style="width: 75%;"/>
+                            <p class="caption">Sample 1 with CFG</p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/random_cfg_2.png" alt="" style="width: 75%;"/>
+                            <p class="caption">Sample 2 with CFG</p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/random_cfg_3.png" alt="" style="width: 75%;"/>
+                            <p class="caption">Sample 3 with CFG</p>
+                        </div>
+                    </div>
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/random_cfg_4.png" alt="" style="width: 50%;"/>
+                            <p class="caption">Sample 4 with CFG</p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/random_cfg_5.png" alt="" style="width: 50%;"/>
+                            <p class="caption">Sample 5 with CFG</p>
+                        </div>
+                    </div> 
+                </section>
+                <section id="part-a-one-seven">
+                    <h3>1.7 Image-to-image Translation</h3>
+                    <p>Here are edits of the Campanile images at noise levels with starting indices <code>i_start = [1, 3, 5, 7, 10, 20]</code> with the conditional text prompt <code>"a high quality photo"</code>.</p>
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/campanile.png" alt="" style="width: 15%;"/>
+                            <p class="caption">Campanile</p>
+                        </div>
+                    </div>
+                    <div class="image-gallery six-wide">
+                        <div class="gallery-item">
+                            <img src="images/sde_1.png" alt=""/>
+                            <p class="caption">SDEdit with <code>i_start=1</code></p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/sde_3.png" alt=""/>
+                            <p class="caption">SDEdit with <code>i_start=3</code></p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/sde_5.png" alt=""/>
+                            <p class="caption">SDEdit with <code>i_start=5</code></p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/sde_7.png" alt=""/>
+                            <p class="caption">SDEdit with <code>i_start=7</code></p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/sde_10.png" alt=""/>
+                            <p class="caption">SDEdit with <code>i_start=10</code></p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/sde_20.png" alt=""/>
+                            <p class="caption">SDEdit with <code>i_start=20</code></p>
+                        </div>
+                    </div> 
+                    <p>Similarly, here are the results with two other test images:</p>
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/profile.jpeg" alt="" style="width: 15%;"/>
+                        </div>
+                    </div>
+                    <div class="image-gallery six-wide">
+                        <div class="gallery-item">
+                            <img src="images/sde_profile_1.png" alt=""/>
+                            <p class="caption">SDEdit with <code>i_start=1</code></p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/sde_profile_3.png" alt=""/>
+                            <p class="caption">SDEdit with <code>i_start=3</code></p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/sde_profile_5.png" alt=""/>
+                            <p class="caption">SDEdit with <code>i_start=5</code></p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/sde_profile_7.png" alt=""/>
+                            <p class="caption">SDEdit with <code>i_start=7</code></p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/sde_profile_10.png" alt=""/>
+                            <p class="caption">SDEdit with <code>i_start=10</code></p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/sde_profile_20.png" alt=""/>
+                            <p class="caption">SDEdit with <code>i_start=20</code></p>
+                        </div>
+                    </div> 
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/curious_test.png" alt="" style="width: 15%;"/>
+                        </div>
+                    </div>
+                    <div class="image-gallery six-wide">
+                        <div class="gallery-item">
+                            <img src="images/sde_curious_1.png" alt=""/>
+                            <p class="caption">SDEdit with <code>i_start=1</code></p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/sde_curious_3.png" alt=""/>
+                            <p class="caption">SDEdit with <code>i_start=3</code></p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/sde_curious_5.png" alt=""/>
+                            <p class="caption">SDEdit with <code>i_start=5</code></p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/sde_curious_7.png" alt=""/>
+                            <p class="caption">SDEdit with <code>i_start=7</code></p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/sde_curious_10.png" alt=""/>
+                            <p class="caption">SDEdit with <code>i_start=10</code></p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/sde_curious_20.png" alt=""/>
+                            <p class="caption">SDEdit with <code>i_start=20</code></p>
+                        </div>
+                    </div>
+                    <section>
+                        <h4>1.7.1 Editing Hand-Drawn and Web Images</h4>
+                        <p>This procedure works better for nonrealistic images, so here are the results:</p>
+                        <h5>Web Image</h5>
+                        <div class="image-gallery">
+                            <div class="gallery-item">
+                                <img src="images/diamond.png" alt="" style="width: 15%;"/>
+                                <p class="caption">Diamond</p>
+                            </div>
+                        </div>
+                        <div class="image-gallery six-wide">
+                            <div class="gallery-item">
+                                <img src="images/sde_diamond_1.png" alt=""/>
+                                <p class="caption">Diamond at <code>i_start=1</code></p>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="images/sde_diamond_3.png" alt=""/>
+                                <p class="caption">Diamond at <code>i_start=3</code></p>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="images/sde_diamond_5.png" alt=""/>
+                                <p class="caption">Diamond at <code>i_start=5</code></p>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="images/sde_diamond_7.png" alt=""/>
+                                <p class="caption">Diamond at <code>i_start=7</code></p>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="images/sde_diamond_10.png" alt=""/>
+                                <p class="caption">Diamond at <code>i_start=10</code></p>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="images/sde_diamond_20.png" alt=""/>
+                                <p class="caption">Diamond at <code>i_start=20</code></p>
+                            </div>
+                        </div>
+                        <h5>Hand-Drawn Images</h5>
+                        <div class="image-gallery">
+                            <div class="gallery-item">
+                                <img src="images/penguin.png" alt="" style="width: 15%;"/>
+                                <p class="caption">Penguin sketch</p>
+                            </div>
+                        </div>
+                        <div class="image-gallery six-wide">
+                            <div class="gallery-item">
+                                <img src="images/sde_penguin1.png" alt=""/>
+                                <p class="caption">Penguin at <code>i_start=1</code></p>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="images/sde_penguin3.png" alt=""/>
+                                <p class="caption">Penguin at <code>i_start=3</code></p>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="images/sde_penguin5.png" alt=""/>
+                                <p class="caption">Penguin at <code>i_start=5</code></p>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="images/sde_penguin7.png" alt=""/>
+                                <p class="caption">Penguin at <code>i_start=7</code></p>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="images/sde_penguin10.png" alt=""/>
+                                <p class="caption">Penguin at <code>i_start=10</code></p>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="images/sde_penguin20.png" alt=""/>
+                                <p class="caption">Penguin at <code>i_start=20</code></p>
+                            </div>
+                        </div>
+                        <div class="image-gallery">
+                            <div class="gallery-item">
+                                <img src="images/doodle.png" alt="" style="width: 15%;"/>
+                                <p class="caption">House sketch</p>
+                            </div>
+                        </div>
+                        <div class="image-gallery six-wide">
+                            <div class="gallery-item">
+                                <img src="images/sde_doodle1.png" alt=""/>
+                                <p class="caption">House at <code>i_start=1</code></p>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="images/sde_doodle3.png" alt=""/>
+                                <p class="caption">House at <code>i_start=3</code></p>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="images/sde_doodle5.png" alt=""/>
+                                <p class="caption">House at <code>i_start=5</code></p>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="images/sde_doodle7.png" alt=""/>
+                                <p class="caption">House at <code>i_start=7</code></p>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="images/sde_doodle10.png" alt=""/>
+                                <p class="caption">House at <code>i_start=10</code></p>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="images/sde_doodle20.png" alt=""/>
+                                <p class="caption">House at <code>i_start=20</code></p>
+                            </div>
+                        </div>
+                    </section>
+                    <section>
+                        <h4>1.7.2 Inpainting</h4>
+                        <p>Again, we will use the same procedure to implement <a href="https://arxiv.org/abs/2201.09865" target="_blank" rel="noopener noreferrer">inpainting</a>, i.e., given an image \(x_{\text{orig}}\), and a binary mask \(\bf{m}\), we can create a new image that has the same content where \(\bf{m}\) is \(0\), but new content wherever \(\bf{m}\) is \(1\). At every step of the diffusion denoising loop after computing \(x_t\), we "force" it to have the same pixels as \(x_{\text{orig}}\) where \(\bf m\) is 0:</p>
+                        <div style="text-align: center;">
+                            <p>
+                                \(\begin{align} 
+                                    x_t \leftarrow \textbf{m} x_t + (1 - \textbf{m})\text{forward}(x_{\text{orig}}, t)
+                                \end{align}\)
+                            </p>
+                        </div>
+                        <p>Here is the <code>inpaint</code> function that does this procedure, which is the same as <code>iterative_denoise_cfg</code>, except it denoises a random noise image and does the inpainting step at the end of the iterative loop:</p>
+                        <pre style="width: 50%"><code>
+                        def inpaint(original_image, mask, prompt_embeds, uncond_prompt_embeds, timesteps, scale=7):
+                            image = torch.randn_like(original_image).to(device).half()
+
+                            with torch.no_grad():
+                                for i in range(10, len(timesteps) - 1):
+                                    ...
+
+                                    clean_t_step = (image - torch.sqrt(1-alpha_cumprod)*cfg_noise_est) / torch.sqrt(alpha_cumprod)
+                                    pred_prev_image = ((torch.sqrt(alpha_cumprod_prev)*beta)/(1-alpha_cumprod))*clean_t_step 
+                                                        + ((torch.sqrt(alpha)*(1-alpha_cumprod_prev))/(1-alpha_cumprod))*image
+                                    pred_prev_image = add_variance(predicted_variance.to('cpu'), 
+                                                                    torch.tensor([t]),
+                                                                    pred_prev_image.to('cpu'))
+
+                                    image = pred_prev_image.half().to(device)
+
+                                    image = mask*image + (1-mask)*(forward(original_image, t).half().to(device))
+
+                                clean = image.cpu().detach().numpy()
+
+                            return clean
+                        </code></pre>
+                        <p>Here are the inpainted results:</p>
+                        <h5>Campanile</h5>
+                        <div class="image-gallery four-wide">
+                            <div class="gallery-item">
+                                <img src="images/campanile.png" alt="" style="width: 70%;"/>
+                                <p class="caption">Campanile</p>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="images/campanile_mask.png" alt="" style="width: 75%;"/>
+                                <p class="caption">Mask</p>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="images/campanile_to_replace.png" alt="" style="width: 75%;"/>
+                                <p class="caption">Hole to Fill</p>
+                            </div>
+                        </div> 
+                        <div class="image-gallery">
+                            <div class="gallery-item">
+                                <img src="images/campanile_inpainted.png" alt="" style="width: 25%;"/>
+                                <p class="caption">Campanile Inpainted</p>
+                            </div>
+                        </div>
+                        <h5>Replacing a subject</h5>
+                        <div class="image-gallery four-wide">
+                            <div class="gallery-item">
+                                <img src="images/curious_test.png" alt="" style="width: 70%;"/>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="images/curious_mask.png" alt="" style="width: 75%;"/>
+                                <p class="caption">Mask</p>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="images/curious_to_replace.png" alt="" style="width: 75%;"/>
+                                <p class="caption">Hole to Fill</p>
+                            </div>
+                        </div> 
+                        <div class="image-gallery">
+                            <div class="gallery-item">
+                                <img src="images/curious_inpainted.png" alt="" style="width: 25%;"/>
+                                <p class="caption">Inpainted</p>
+                            </div>
+                        </div>
+                        <h5>Erase people in the background</h5>
+                        <div class="image-gallery four-wide">
+                            <div class="gallery-item">
+                                <img src="images/honor.png" alt="" style="width: 70%;"/>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="images/honor_mask.png" alt="" style="width: 75%;"/>
+                                <p class="caption">Mask</p>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="images/honor_to_replace.png" alt="" style="width: 75%;"/>
+                                <p class="caption">Hole to Fill</p>
+                            </div>
+                        </div>
+                        <div class="image-gallery">
+                            <div class="gallery-item">
+                                <img src="images/honor_inpainted.png" alt="" style="width: 25%;"/>
+                                <p class="caption">Inpainted</p>
+                            </div>
+                        </div>
+                    </section>
+                    <section>
+                        <h4>1.7.3 Text-Conditional Image-to-image Translation</h4>
+                        <p>Now, I will do the same thing as in 1.7 and 1.7.1, but guide the projection with a text prompt:</p>
+                        <div class="image-gallery">
+                            <div class="gallery-item">
+                                <img src="images/campanile.png" alt="" style="width: 15%;"/>
+                                <p class="caption">Campanile</p>
+                            </div>
+                        </div>
+                        <div class="image-gallery six-wide">
+                            <div class="gallery-item">
+                                <img src="images/waterfall_1.png" alt=""/>
+                                <p class="caption">A mosaic of a waterfall at <code>i_start=1</code></p>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="images/waterfall_3.png" alt=""/>
+                                <p class="caption">A mosaic of a waterfall at <code>i_start=3</code></p>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="images/waterfall_5.png" alt=""/>
+                                <p class="caption">A mosaic of a waterfall at <code>i_start=5</code></p>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="images/waterfall_7.png" alt=""/>
+                                <p class="caption">A mosaic of a waterfall at <code>i_start=7</code></p>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="images/waterfall_10.png" alt=""/>
+                                <p class="caption">A mosaic of a waterfall at <code>i_start=10</code></p>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="images/waterfall_20.png" alt=""/>
+                                <p class="caption">A mosaic of a waterfall at <code>i_start=20</code></p>
+                            </div>
+                        </div> 
+                        <div class="image-gallery">
+                            <div class="gallery-item">
+                                <img src="images/diamond.png" alt="" style="width: 15%;"/>
+                                <p class="caption">Diamond</p>
+                            </div>
+                        </div>
+                        <div class="image-gallery six-wide">
+                            <div class="gallery-item">
+                                <img src="images/ufo_1.png" alt=""/>
+                                <p class="caption">An UFO at <code>i_start=1</code></p>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="images/ufo_3.png" alt=""/>
+                                <p class="caption">An UFO at <code>i_start=3</code></p>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="images/ufo_5.png" alt=""/>
+                                <p class="caption">An UFO at <code>i_start=5</code></p>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="images/ufo_7.png" alt=""/>
+                                <p class="caption">An UFO at <code>i_start=7</code></p>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="images/ufo_10.png" alt=""/>
+                                <p class="caption">An UFO at <code>i_start=10</code></p>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="images/ufo_20.png" alt=""/>
+                                <p class="caption">An UFO at <code>i_start=20</code></p>
+                            </div>
+                        </div> 
+                        <div class="image-gallery">
+                            <div class="gallery-item">
+                                <img src="images/penguin.png" alt="" style="width: 15%;"/>
+                                <p class="caption">Penguin sketch</p>
+                            </div>
+                        </div>
+                        <div class="image-gallery six-wide">
+                            <div class="gallery-item">
+                                <img src="images/cat_1.png" alt=""/>
+                                <p class="caption">A lithograph of a cat at <code>i_start=1</code></p>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="images/cat_3.png" alt=""/>
+                                <p class="caption">A lithograph of a cat at <code>i_start=3</code></p>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="images/cat_5.png" alt=""/>
+                                <p class="caption">A lithograph of a cat at <code>i_start=5</code></p>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="images/cat_7.png" alt=""/>
+                                <p class="caption">A lithograph of a cat at <code>i_start=7</code></p>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="images/cat_10.png" alt=""/>
+                                <p class="caption">A lithograph of a cat at <code>i_start=10</code></p>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="images/cat_20.png" alt=""/>
+                                <p class="caption">A lithograph of a cat at <code>i_start=20</code></p>
+                            </div>
+                        </div>
+                    </section>
+                </section>
+                <section id="part-a-one-eight">
+                    <h3>1.8 Visual Anagrams</h3>
+                    <p>Now, I will create <a href="https://dangeng.github.io/visual_anagrams/" target="_blank" rel="noopener noreferrer">Visual Anagrams</a> with diffusion models, specifically images that look like one prompt, but another prompt flipped upside down.</p>
+                    <p>To do so, I will denoise an image \(x_t\) at step \(t\) normally with the prompt \(p_1\), to obtain noise estimate \(\epsilon_1\). But at the same time, flip \(x_t\) upside down, and denoise with the prompt \(p_2\) to get noise estimate \(\epsilon_2\). Then, I flip \(\epsilon_2\) back, and average the two noise estimates. After, perform a reverse diffusion step with the averaged noise estimate. This is what <code>make_flip_illusion</code> looks like:</p>
+                    <pre style="width: 50%"><code>
+                    def make_flip_illusion(image, i_start, prompt_embeds, uncond_prompt_embeds, timesteps, scale=7):
+                        prompt_embeds_1, prompt_embeds_2 = prompt_embeds[0], prompt_embeds[1]
+                        uncond_prompt_embeds_1, uncond_prompt_embeds_2 = uncond_prompt_embeds[0], uncond_prompt_embeds[1]
+
+                        with torch.no_grad():
+                            for i in range(i_start, len(timesteps) - 1):
+                                t = timesteps[i]
+                                prev_t = timesteps[i+1]
+
+                                alpha_cumprod = alphas_cumprod[t]
+                                alpha_cumprod_prev = alphas_cumprod[prev_t]
+                                alpha = alpha_cumprod / alpha_cumprod_prev
+                                beta = 1 - alpha
+
+                                model_output_1 = stage_1.unet(
+                                    image.half().to(device),
+                                    t,
+                                    encoder_hidden_states=prompt_embeds_1,
+                                    return_dict=False
+                                )[0]
+
+                                uncond_model_output_1 = stage_1.unet(
+                                    image.half().to(device),
+                                    t,
+                                    encoder_hidden_states=uncond_prompt_embeds_1,
+                                    return_dict=False
+                                )[0]
+
+                                noise_est_1, predicted_variance = torch.split(model_output_1, image.shape[1], dim=1)
+                                uncond_noise_est_1, _ = torch.split(uncond_model_output_1, image.shape[1], dim=1)
+
+                                cfg_noise_est_1 = uncond_noise_est_1 + scale*(noise_est_1 - uncond_noise_est_1)
+
+                                flipped_image = torch.flip(image, [2])
+
+                                model_output_2 = stage_1.unet(
+                                    flipped_image.half().to(device),
+                                    t,
+                                    encoder_hidden_states=prompt_embeds_2,
+                                    return_dict=False
+                                )[0]
+
+                                uncond_model_output_2 = stage_1.unet(
+                                    flipped_image.half().to(device),
+                                    t,
+                                    encoder_hidden_states=uncond_prompt_embeds_2,
+                                    return_dict=False
+                                )[0]
+
+                                noise_est_2, _ = torch.split(model_output_2, image.shape[1], dim=1)
+                                uncond_noise_est_2, _ = torch.split(uncond_model_output_2, image.shape[1], dim=1)
+
+                                cfg_noise_est_2 = uncond_noise_est_2 + scale*(noise_est_2 - uncond_noise_est_2)
+                                cfg_noise_est_2 = torch.flip(cfg_noise_est_2, [2])
+
+                                cfg_noise_est = (cfg_noise_est_1 + cfg_noise_est_2) / 2
+
+                                clean_t_step = (image - torch.sqrt(1-alpha_cumprod)*cfg_noise_est) / torch.sqrt(alpha_cumprod)
+                                pred_prev_image = ((torch.sqrt(alpha_cumprod_prev)*beta)/(1-alpha_cumprod))*clean_t_step 
+                                                    + ((torch.sqrt(alpha)*(1-alpha_cumprod_prev))/(1-alpha_cumprod))*image
+                                pred_prev_image = add_variance(predicted_variance.to('cpu'), 
+                                                               torch.tensor([t]), 
+                                                               pred_prev_image.to('cpu'))
+
+                                image = pred_prev_image.half().to(device)
+
+                            clean = image.cpu().detach().numpy()
+
+                        return clean
+                    </code></pre>
+                    <p>Here are the generated illusions:</p>
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/lebron.png" alt="" style="width: 60%;"/>
+                            <p class="caption">An oil painting of LeBron James</p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/goat.png" alt="" style="width: 60%;"/>
+                            <p class="caption">An oil painting of a goat</p>
+                        </div>
+                    </div>
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/sf.png" alt="" style="width: 60%;"/>
+                            <p class="caption">A sky view of San Francisco</p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/sf_flipped.png" alt="" style="width: 60%;"/>
+                            <p class="caption">A mosaic of a waterfall</p>
+                        </div>
+                    </div> 
+                </section>
+                <section id="part-a-one-nine">
+                    <h3>1.9 Hybrid Images</h3>
+                    <p>In this part, I will implement <a href="https://dangeng.github.io/factorized_diffusion/" target="_blank" rel="noopener noreferrer">Factorized Diffusion</a>. Similar to Part 1.8, I will create a composite noise estimate \(\epsilon\) by estimating the noise with two different text prompts, and then combining low frequencies from one noise estimate with high frequencies of the other. I will use <code>torchvision.transforms.functional.gaussian_blur</code> with kernel size \(33\) and \(\sigma=2\) to get the low and high frequencies. Here is the <code>make_hybrids</code> function that does this:</p>
+                    <pre style="width: 50%"><code>
+                    def make_hybrids(image, i_start, prompt_embeds, uncond_prompt_embeds, timesteps, scale=7):
+                        prompt_embeds_1, prompt_embeds_2 = prompt_embeds[0], prompt_embeds[1]
+                        uncond_prompt_embeds_1, uncond_prompt_embeds_2 = uncond_prompt_embeds[0], uncond_prompt_embeds[1]
+
+                        with torch.no_grad():
+                            for i in range(i_start, len(timesteps) - 1):
+                                ...
+
+                                model_output_1 = stage_1.unet(
+                                    image.half().to(device),
+                                    t,
+                                    encoder_hidden_states=prompt_embeds_1,
+                                    return_dict=False
+                                )[0]
+
+                                uncond_model_output_1 = stage_1.unet(
+                                    image.half().to(device),
+                                    t,
+                                    encoder_hidden_states=uncond_prompt_embeds_1,
+                                    return_dict=False
+                                )[0]
+
+                                noise_est_1, predicted_variance = torch.split(model_output_1, image.shape[1], dim=1)
+                                uncond_noise_est_1, _ = torch.split(uncond_model_output_1, image.shape[1], dim=1)
+
+                                cfg_noise_est_1 = uncond_noise_est_1 + scale*(noise_est_1 - uncond_noise_est_1)
+                                cfg_noise_est_1 = TF.gaussian_blur(cfg_noise_est_1, kernel_size=33, sigma=2)
+
+                                model_output_2 = stage_1.unet(
+                                    image.half().to(device),
+                                    t,
+                                    encoder_hidden_states=prompt_embeds_2,
+                                    return_dict=False
+                                )[0]
+
+                                uncond_model_output_2 = stage_1.unet(
+                                    image.half().to(device),
+                                    t,
+                                    encoder_hidden_states=uncond_prompt_embeds_2,
+                                    return_dict=False
+                                )[0]
+
+                                noise_est_2, _ = torch.split(model_output_2, image.shape[1], dim=1)
+                                uncond_noise_est_2, _ = torch.split(uncond_model_output_2, image.shape[1], dim=1)
+
+                                cfg_noise_est_2 = uncond_noise_est_2 + scale*(noise_est_2 - uncond_noise_est_2)
+                                cfg_noise_est_2 = cfg_noise_est_2 - TF.gaussian_blur(cfg_noise_est_2, kernel_size=33, sigma=2)
+
+
+                                cfg_noise_est = cfg_noise_est_1 + cfg_noise_est_2
+
+                                clean_t_step = (image - torch.sqrt(1-alpha_cumprod)*cfg_noise_est) / torch.sqrt(alpha_cumprod)
+                                pred_prev_image = ((torch.sqrt(alpha_cumprod_prev)*beta)/(1-alpha_cumprod))*clean_t_step 
+                                                    + ((torch.sqrt(alpha)*(1-alpha_cumprod_prev))/(1-alpha_cumprod))*image
+                                pred_prev_image = add_variance(predicted_variance.to('cpu'), 
+                                                               torch.tensor([t]), 
+                                                               pred_prev_image.to('cpu'))
+
+                                image = pred_prev_image.half().to(device)
+
+                            clean = image.cpu().detach().numpy()
+
+                        return clean
+                    </code></pre>
+                    <p>Here are the generated hybrid images:</p>
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/lugano_ufo.png" alt="" style="width: 60%;"/>
+                            <p class="caption">Hybrid images of an UFO and Lake Lugano</p>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="images/skeleton.png" alt="" style="width: 60%;"/>
+                            <p class="caption">Hybrid images of a guitar and an oil painting of a skeleton smoking a cigarette</p>
+                        </div>
+                    </div>
+                </section>
+            </section>
+        </main>
+    </div>
+</body>
+</html>
