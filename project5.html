@@ -19,22 +19,60 @@
             <a href="index.html" style="color: #ccc; text-decoration: none; font-weight: normal;">CS 180 Fall 2025</a>
             <nav>
                 <ul>
-                    <li><a href="#part-a">Part A</a></li>
-                    <ul class="subsection">
-                        <li><a href="#part-a-zero">Part 0</a></li>
-                        <li><a href="#part-a-one">Part 1</a></li>
+                    <li>
+                        <a href="#part-a">Part A</a>
                         <ul class="subsection">
-                            <li><a href="#part-a-one-one">1.1</a></li>
-                            <li><a href="#part-a-one-two">1.2</a></li>
-                            <li><a href="#part-a-one-three">1.3</a></li>
-                            <li><a href="#part-a-one-four">1.4</a></li>
-                            <li><a href="#part-a-one-five">1.5</a></li>
-                            <li><a href="#part-a-one-six">1.6</a></li>
-                            <li><a href="#part-a-one-seven">1.7</a></li>
-                            <li><a href="#part-a-one-eight">1.8</a></li>
-                            <li><a href="#part-a-one-nine">1.9</a></li>
+                        <li>
+                            <details>
+                            <summary><a href="#part-a-zero">Part 0</a></summary>
+                            </details>
+                        </li>
+                        <li>
+                            <details>
+                            <summary><a href="#part-a-one">Part 1</a></summary>
+                            <ul class="sub-subsection">
+                                <li><a href="#part-a-one-one">1.1</a></li>
+                                <li><a href="#part-a-one-two">1.2</a></li>
+                                <li><a href="#part-a-one-three">1.3</a></li>
+                                <li><a href="#part-a-one-four">1.4</a></li>
+                                <li><a href="#part-a-one-five">1.5</a></li>
+                                <li><a href="#part-a-one-six">1.6</a></li>
+                                <li><a href="#part-a-one-seven">1.7</a></li>
+                                <li><a href="#part-a-one-eight">1.8</a></li>
+                                <li><a href="#part-a-one-nine">1.9</a></li>
+                            </ul>
+                            </details>
+                        </li>
                         </ul>
-                    </ul>
+                    </li>
+
+                    <li>
+                        <a href="#part-b">Part B</a>
+                        <ul class="subsection">
+                        <li>
+                            <details>
+                            <summary><a href="#part-b-one">Part 1</a></summary>
+                            <ul class="sub-subsection">
+                                <li><a href="#part-b-one-one">1.1</a></li>
+                                <li><a href="#part-b-one-two">1.2</a></li>
+                            </ul>
+                            </details>
+                        </li>
+                        <li>
+                            <details>
+                            <summary><a href="#part-b-two">Part 2</a></summary>
+                            <ul class="sub-subsection">
+                                <li><a href="#part-b-two-one">2.1</a></li>
+                                <li><a href="#part-b-two-two">2.2</a></li>
+                                <li><a href="#part-b-two-three">2.3</a></li>
+                                <li><a href="#part-b-two-four">2.4</a></li>
+                                <li><a href="#part-b-two-five">2.5</a></li>
+                                <li><a href="#part-b-two-six">2.6</a></li>
+                            </ul>
+                            </details>
+                        </li>
+                        </ul>
+                    </li>
                 </ul>
             </nav>
         </aside>
@@ -110,15 +148,8 @@
                             \end{align}\)
                         </p>
                     </div>
-                    <p>for a given clean image \(x_0\) and noise coefficient \(\bar{\alpha}_t\) at timestep \(t\). And so I implemented this forward process as a function that takes in an image <code>im</code> and timestep <code>t</code>:</p>
-                    <pre style="width: 50%"><code>
-                        def forward(im, t):
-                            with torch.no_grad():
-                                alpha_t = alphas_cumprod[t]
-                                eps = torch.randn_like(im)
-                                im_noisy = torch.sqrt(alpha_t)*im + torch.sqrt(1-alpha_t)*eps
-                            return im_noisy
-                    </code></pre>
+                    <p>for a given clean image \(x_0\) and noise coefficient \(\bar{\alpha}_t\) at timestep \(t\). The \(\bar{\alpha}_t\) noise coefficients are taken from the first stage of the pretrained DeepFloyd IF diffusion model as <code>alphas_cumprod</code>.
+                    So, I implemented this forward process as a function <code>forward(im, t)</code> that takes in an image <code>im</code> (\(x_0\)) and timestep <code>t</code> and outputs <code>im_noisy</code> (\(x_t\)).</p>
                     <p>I ran the forward process on the Campanile test image with \(t \in [250, 500, 700]\):</p>
                     <div class="image-gallery">
                         <div class="gallery-item">
@@ -214,7 +245,7 @@
                 </section>
                 <section id="part-a-one-four">
                     <h3>1.4 Iterative Denoising</h3>
-                    <p>We can improve the one-step denoiser from Part 1.3 by implementing an iterative denoiser <code>iterative_denoise</code>. To save time and computational cost, I used a strided step of \(30\) starting at timestep \(990\) to denoise to timestep \(0\). At each denoising step, we use the following formula:</p>
+                    <p>We can improve the one-step denoiser from Part 1.3 by implementing an iterative denoiser <code>iterative_denoise</code>. To save time and computational cost, I used a strided step of \(30\) starting at timestep \(990\) to denoise to timestep \(0\). At each denoising step, I used the following formula:</p>
                     <div style="text-align: center;">
                         <p>
                             \(\begin{align} 
@@ -231,42 +262,17 @@
                         <li>\(\beta_t = 1 - \alpha_t\)</li>
                         <li>\(x_0\) is our current estimate of the clean image</li>
                     </ul>
-                    <p>This is what <code>iterative_denoise</code> looks like:</p>
+                    <p>This is a snippet of what <code>iterative_denoise</code> loop looks like:</p>
                     <pre style="width: 50%"><code>
-                    def iterative_denoise(im_noisy, i_start, prompt_embeds, timesteps):
-                        image = im_noisy
+            for i in range(i_start, len(timesteps) - 1):
+                ...
 
-                        with torch.no_grad():
-                            for i in range(i_start, len(timesteps) - 1):
-                                t = timesteps[i]
-                                prev_t = timesteps[i+1]
+                clean_t_step = (image - sqrt(1-alpha_cumprod)*noise_est) / sqrt(alpha_cumprod)
+                pred_prev_image = ((sqrt(alpha_cumprod_prev)*beta)/(1-alpha_cumprod))*clean_t_step 
+                                    + ((sqrt(alpha)*(1-alpha_cumprod_prev))/(1-alpha_cumprod))*image
+                                    + add_variance(...)
 
-                                alpha_cumprod = alphas_cumprod[t]
-                                alpha_cumprod_prev = alphas_cumprod[prev_t]
-                                alpha = alpha_cumprod / alpha_cumprod_prev
-                                beta = 1 - alpha
-
-                                model_output = stage_1.unet(
-                                    image.half().to(device),
-                                    t,
-                                    encoder_hidden_states=prompt_embeds,
-                                    return_dict=False
-                                )[0]
-
-                                noise_est, predicted_variance = torch.split(model_output, image.shape[1], dim=1)
-
-                                clean_t_step = (image - torch.sqrt(1-alpha_cumprod)*noise_est) / torch.sqrt(alpha_cumprod)
-                                pred_prev_image = ((torch.sqrt(alpha_cumprod_prev)*beta)/(1-alpha_cumprod))*clean_t_step 
-                                                    + ((torch.sqrt(alpha)*(1-alpha_cumprod_prev))/(1-alpha_cumprod))*image
-                                pred_prev_image = add_variance(predicted_variance.to('cpu'), 
-                                                                torch.tensor([t]),
-                                                                pred_prev_image.to('cpu'))
-
-                                image = pred_prev_image.to(device).half()
-
-                            clean = image.cpu().detach().numpy()
-
-                        return clean
+                image = pred_prev_image
                     </code></pre>
                 
                     <p>Here are the results of the iterative denoising, as well as a comparison to the denoised estimations from the previous parts:</p>
@@ -349,46 +355,20 @@
                             \end{align}\)
                         </p>
                     </div>
-                    <p>where \(\gamma\) controls the strength of CFG (I used \(\gamma=7\)). To get an unconditional noise estimate, we can just pass an empty prompt embedding of <code>""</code> to the diffusion model. Here is my implementation of <code>iterative_denoise_cfg</code>, which is almost identical to <code>iterative_denoise</code>:</p>
+                    <p>where \(\gamma\) controls the strength of CFG (I used \(\gamma=7\)). To get an unconditional noise estimate, we can just pass an empty prompt embedding of <code>""</code> to the diffusion model. 
+                    Here is a snippet of my implementation of <code>iterative_denoise_cfg</code>, which is almost identical to <code>iterative_denoise</code>:</p>
                     <pre style="width: 50%"><code>
-                        def iterative_denoise_cfg(im_noisy, i_start, prompt_embeds, uncond_prompt_embeds, timesteps, scale=7):
-                            image = im_noisy
+            for i in range(i_start, len(timesteps) - 1):
+                ...
 
-                            with torch.no_grad():
-                                for i in range(i_start, len(timesteps) - 1):
-                                    ...
+                cfg_noise_est = uncond_noise_est + scale*(noise_est - uncond_noise_est)
 
-                                    model_output = stage_1.unet(
-                                        image.half().to(device),
-                                        t,
-                                        encoder_hidden_states=prompt_embeds,
-                                        return_dict=False
-                                    )[0]
+                clean_t_step = (image - sqrt(1-alpha_cumprod)*cfg_noise_est) / sqrt(alpha_cumprod)
+                pred_prev_image = ((sqrt(alpha_cumprod_prev)*beta)/(1-alpha_cumprod))*clean_t_step 
+                                    + ((sqrt(alpha)*(1-alpha_cumprod_prev))/(1-alpha_cumprod))*image
+                                    + add_variance(...)
 
-                                    uncond_model_output = stage_1.unet(
-                                        image.half().to(device),
-                                        t,
-                                        encoder_hidden_states=uncond_prompt_embeds,
-                                        return_dict=False
-                                    )[0]
-
-                                    noise_est, predicted_variance = torch.split(model_output, image.shape[1], dim=1)
-                                    uncond_noise_est, _ = torch.split(uncond_model_output, image.shape[1], dim=1)
-
-                                    cfg_noise_est = uncond_noise_est + scale*(noise_est - uncond_noise_est)
-
-                                    clean_t_step = (image - torch.sqrt(1-alpha_cumprod)*cfg_noise_est) / torch.sqrt(alpha_cumprod)
-                                    pred_prev_image = ((torch.sqrt(alpha_cumprod_prev)*beta)/(1-alpha_cumprod))*clean_t_step 
-                                                        + ((torch.sqrt(alpha)*(1-alpha_cumprod_prev))/(1-alpha_cumprod))*image
-                                    pred_prev_image = add_variance(predicted_variance.to('cpu'), 
-                                                                   torch.tensor([t]), 
-                                                                   pred_prev_image.to('cpu'))
-
-                                    image = pred_prev_image.half().to(device)
-
-                                clean = image.cpu().detach().numpy()
-
-                            return clean
+                image = pred_prev_image
                     </code></pre>
                     <p>Here are five images of <code>"a high quality photo"</code> with a CFG scale of \(\gamma=7\):</p>
                     <div class="image-gallery">
@@ -618,7 +598,7 @@
                     </section>
                     <section>
                         <h4>1.7.2 Inpainting</h4>
-                        <p>Again, we will use the same procedure to implement <a href="https://arxiv.org/abs/2201.09865" target="_blank" rel="noopener noreferrer">inpainting</a>, i.e., given an image \(x_{\text{orig}}\), and a binary mask \(\bf{m}\), we can create a new image that has the same content where \(\bf{m}\) is \(0\), but new content wherever \(\bf{m}\) is \(1\). At every step of the diffusion denoising loop after computing \(x_t\), we "force" it to have the same pixels as \(x_{\text{orig}}\) where \(\bf m\) is 0:</p>
+                        <p>Again, I will use the same procedure to implement <a href="https://arxiv.org/abs/2201.09865" target="_blank" rel="noopener noreferrer">inpainting</a>, i.e., given an image \(x_{\text{orig}}\), and a binary mask \(\bf{m}\), we can create a new image that has the same content where \(\bf{m}\) is \(0\), but new content wherever \(\bf{m}\) is \(1\). At every step of the diffusion denoising loop after computing \(x_t\), we "force" it to have the same pixels as \(x_{\text{orig}}\) where \(\bf m\) is 0:</p>
                         <div style="text-align: center;">
                             <p>
                                 \(\begin{align} 
@@ -626,29 +606,21 @@
                                 \end{align}\)
                             </p>
                         </div>
-                        <p>Here is the <code>inpaint</code> function that does this procedure, which is the same as <code>iterative_denoise_cfg</code>, except it denoises a random noise image and does the inpainting step at the end of the iterative loop:</p>
+                        <p>Here is a snippet of the <code>inpaint</code> function that does this procedure, which is the same as <code>iterative_denoise_cfg</code>, except it denoises a random noise image and does the inpainting step at the end of the iterative loop:</p>
                         <pre style="width: 50%"><code>
-                        def inpaint(original_image, mask, prompt_embeds, uncond_prompt_embeds, timesteps, scale=7):
-                            image = torch.randn_like(original_image).to(device).half()
+            image = torch.randn_like(original_image)
 
-                            with torch.no_grad():
-                                for i in range(10, len(timesteps) - 1):
-                                    ...
+            for i in range(10, len(timesteps) - 1):
+                ...
 
-                                    clean_t_step = (image - torch.sqrt(1-alpha_cumprod)*cfg_noise_est) / torch.sqrt(alpha_cumprod)
-                                    pred_prev_image = ((torch.sqrt(alpha_cumprod_prev)*beta)/(1-alpha_cumprod))*clean_t_step 
-                                                        + ((torch.sqrt(alpha)*(1-alpha_cumprod_prev))/(1-alpha_cumprod))*image
-                                    pred_prev_image = add_variance(predicted_variance.to('cpu'), 
-                                                                    torch.tensor([t]),
-                                                                    pred_prev_image.to('cpu'))
+                clean_t_step = (image - sqrt(1-alpha_cumprod)*cfg_noise_est) / sqrt(alpha_cumprod)
+                pred_prev_image = ((sqrt(alpha_cumprod_prev)*beta)/(1-alpha_cumprod))*clean_t_step 
+                                    + ((sqrt(alpha)*(1-alpha_cumprod_prev))/(1-alpha_cumprod))*image
+                                    + add_variance(...)
+                
+                image = pred_prev_image
 
-                                    image = pred_prev_image.half().to(device)
-
-                                    image = mask*image + (1-mask)*(forward(original_image, t).half().to(device))
-
-                                clean = image.cpu().detach().numpy()
-
-                            return clean
+                image = mask*image + (1-mask)*(forward(original_image, t))
                         </code></pre>
                         <p>Here are the inpainted results:</p>
                         <h5>Campanile</h5>
@@ -817,77 +789,31 @@
                 <section id="part-a-one-eight">
                     <h3>1.8 Visual Anagrams</h3>
                     <p>Now, I will create <a href="https://dangeng.github.io/visual_anagrams/" target="_blank" rel="noopener noreferrer">Visual Anagrams</a> with diffusion models, specifically images that look like one prompt, but another prompt flipped upside down.</p>
-                    <p>To do so, I will denoise an image \(x_t\) at step \(t\) normally with the prompt \(p_1\), to obtain noise estimate \(\epsilon_1\). But at the same time, flip \(x_t\) upside down, and denoise with the prompt \(p_2\) to get noise estimate \(\epsilon_2\). Then, I flip \(\epsilon_2\) back, and average the two noise estimates. After, perform a reverse diffusion step with the averaged noise estimate. This is what <code>make_flip_illusion</code> looks like:</p>
+                    <p>To do so, I will denoise an image \(x_t\) at step \(t\) normally with the prompt \(p_1\), to obtain noise estimate \(\epsilon_1\). But at the same time, flip \(x_t\) upside down, and denoise with the prompt \(p_2\) to get noise estimate \(\epsilon_2\). Then, I flip \(\epsilon_2\) back, and average the two noise estimates. After, perform a reverse diffusion step with the averaged noise estimate. 
+                    This is a snippet of what <code>make_flip_illusion</code> looks like:</p>
                     <pre style="width: 50%"><code>
-                    def make_flip_illusion(image, i_start, prompt_embeds, uncond_prompt_embeds, timesteps, scale=7):
-                        prompt_embeds_1, prompt_embeds_2 = prompt_embeds[0], prompt_embeds[1]
-                        uncond_prompt_embeds_1, uncond_prompt_embeds_2 = uncond_prompt_embeds[0], uncond_prompt_embeds[1]
+            for i in range(i_start, len(timesteps) - 1):
+                ...
 
-                        with torch.no_grad():
-                            for i in range(i_start, len(timesteps) - 1):
-                                t = timesteps[i]
-                                prev_t = timesteps[i+1]
+                model_output_1 = stage_1.unet(image, t, prompt_embeds_1)[0]
+                uncond_model_output_1 = stage_1.unet(image, t, uncond_prompt_embeds_1)[0]
+                cfg_noise_est_1 = uncond_noise_est_1 + scale*(noise_est_1 - uncond_noise_est_1)
 
-                                alpha_cumprod = alphas_cumprod[t]
-                                alpha_cumprod_prev = alphas_cumprod[prev_t]
-                                alpha = alpha_cumprod / alpha_cumprod_prev
-                                beta = 1 - alpha
+                flipped_image = flip(image, [2])
 
-                                model_output_1 = stage_1.unet(
-                                    image.half().to(device),
-                                    t,
-                                    encoder_hidden_states=prompt_embeds_1,
-                                    return_dict=False
-                                )[0]
+                model_output_2 = stage_1.unet(flipped_image, t, prompt_embeds_2)[0]
+                uncond_model_output_2 = stage_1.unet(flipped_image, t, uncond_prompt_embeds_2)[0]
+                cfg_noise_est_2 = uncond_noise_est_2 + scale*(noise_est_2 - uncond_noise_est_2)
+                cfg_noise_est_2 = flip(cfg_noise_est_2, [2])
 
-                                uncond_model_output_1 = stage_1.unet(
-                                    image.half().to(device),
-                                    t,
-                                    encoder_hidden_states=uncond_prompt_embeds_1,
-                                    return_dict=False
-                                )[0]
+                cfg_noise_est = (cfg_noise_est_1 + cfg_noise_est_2) / 2
 
-                                noise_est_1, predicted_variance = torch.split(model_output_1, image.shape[1], dim=1)
-                                uncond_noise_est_1, _ = torch.split(uncond_model_output_1, image.shape[1], dim=1)
+                clean_t_step = (image - sqrt(1-alpha_cumprod)*cfg_noise_est) / sqrt(alpha_cumprod)
+                pred_prev_image = ((sqrt(alpha_cumprod_prev)*beta)/(1-alpha_cumprod))*clean_t_step 
+                                    + ((sqrt(alpha)*(1-alpha_cumprod_prev))/(1-alpha_cumprod))*image
+                                    + add_variance(...)
 
-                                cfg_noise_est_1 = uncond_noise_est_1 + scale*(noise_est_1 - uncond_noise_est_1)
-
-                                flipped_image = torch.flip(image, [2])
-
-                                model_output_2 = stage_1.unet(
-                                    flipped_image.half().to(device),
-                                    t,
-                                    encoder_hidden_states=prompt_embeds_2,
-                                    return_dict=False
-                                )[0]
-
-                                uncond_model_output_2 = stage_1.unet(
-                                    flipped_image.half().to(device),
-                                    t,
-                                    encoder_hidden_states=uncond_prompt_embeds_2,
-                                    return_dict=False
-                                )[0]
-
-                                noise_est_2, _ = torch.split(model_output_2, image.shape[1], dim=1)
-                                uncond_noise_est_2, _ = torch.split(uncond_model_output_2, image.shape[1], dim=1)
-
-                                cfg_noise_est_2 = uncond_noise_est_2 + scale*(noise_est_2 - uncond_noise_est_2)
-                                cfg_noise_est_2 = torch.flip(cfg_noise_est_2, [2])
-
-                                cfg_noise_est = (cfg_noise_est_1 + cfg_noise_est_2) / 2
-
-                                clean_t_step = (image - torch.sqrt(1-alpha_cumprod)*cfg_noise_est) / torch.sqrt(alpha_cumprod)
-                                pred_prev_image = ((torch.sqrt(alpha_cumprod_prev)*beta)/(1-alpha_cumprod))*clean_t_step 
-                                                    + ((torch.sqrt(alpha)*(1-alpha_cumprod_prev))/(1-alpha_cumprod))*image
-                                pred_prev_image = add_variance(predicted_variance.to('cpu'), 
-                                                               torch.tensor([t]), 
-                                                               pred_prev_image.to('cpu'))
-
-                                image = pred_prev_image.half().to(device)
-
-                            clean = image.cpu().detach().numpy()
-
-                        return clean
+                image = pred_prev_image
                     </code></pre>
                     <p>Here are the generated illusions:</p>
                     <div class="image-gallery">
@@ -913,71 +839,29 @@
                 </section>
                 <section id="part-a-one-nine">
                     <h3>1.9 Hybrid Images</h3>
-                    <p>In this part, I will implement <a href="https://dangeng.github.io/factorized_diffusion/" target="_blank" rel="noopener noreferrer">Factorized Diffusion</a>. Similar to Part 1.8, I will create a composite noise estimate \(\epsilon\) by estimating the noise with two different text prompts, and then combining low frequencies from one noise estimate with high frequencies of the other. I will use <code>torchvision.transforms.functional.gaussian_blur</code> with kernel size \(33\) and \(\sigma=2\) to get the low and high frequencies. Here is the <code>make_hybrids</code> function that does this:</p>
+                    <p>In this part, I will implement <a href="https://dangeng.github.io/factorized_diffusion/" target="_blank" rel="noopener noreferrer">Factorized Diffusion</a>. Similar to Part 1.8, I will create a composite noise estimate \(\epsilon\) by estimating the noise with two different text prompts, and then combining low frequencies from one noise estimate with high frequencies of the other. I will use <code>torchvision.transforms.functional.gaussian_blur</code> with kernel size \(33\) and \(\sigma=2\) to get the low and high frequencies. Here is a snippet of what the <code>make_hybrids</code> function that does this:</p>
                     <pre style="width: 50%"><code>
-                    def make_hybrids(image, i_start, prompt_embeds, uncond_prompt_embeds, timesteps, scale=7):
-                        prompt_embeds_1, prompt_embeds_2 = prompt_embeds[0], prompt_embeds[1]
-                        uncond_prompt_embeds_1, uncond_prompt_embeds_2 = uncond_prompt_embeds[0], uncond_prompt_embeds[1]
+            for i in range(i_start, len(timesteps) - 1):
+                ...
 
-                        with torch.no_grad():
-                            for i in range(i_start, len(timesteps) - 1):
-                                ...
+                model_output_1 = stage_1.unet(image, t, prompt_embeds_1)[0]
+                uncond_model_output_1 = stage_1.unet(image, t, uncond_prompt_embeds_1)[0]
+                cfg_noise_est_1 = uncond_noise_est_1 + scale*(noise_est_1 - uncond_noise_est_1)
+                cfg_noise_est_1 = TF.gaussian_blur(cfg_noise_est_1, kernel_size=33, sigma=2)
 
-                                model_output_1 = stage_1.unet(
-                                    image.half().to(device),
-                                    t,
-                                    encoder_hidden_states=prompt_embeds_1,
-                                    return_dict=False
-                                )[0]
+                model_output_2 = stage_1.unet(flipped_image, t, prompt_embeds_2)[0]
+                uncond_model_output_2 = stage_1.unet(flipped_image, t, uncond_prompt_embeds_2)[0]
+                cfg_noise_est_2 = uncond_noise_est_2 + scale*(noise_est_2 - uncond_noise_est_2)
+                cfg_noise_est_2 = cfg_noise_est_2 - TF.gaussian_blur(cfg_noise_est_2, kernel_size=33, sigma=2)
 
-                                uncond_model_output_1 = stage_1.unet(
-                                    image.half().to(device),
-                                    t,
-                                    encoder_hidden_states=uncond_prompt_embeds_1,
-                                    return_dict=False
-                                )[0]
+                cfg_noise_est = cfg_noise_est_1 + cfg_noise_est_2
 
-                                noise_est_1, predicted_variance = torch.split(model_output_1, image.shape[1], dim=1)
-                                uncond_noise_est_1, _ = torch.split(uncond_model_output_1, image.shape[1], dim=1)
+                clean_t_step = (image - sqrt(1-alpha_cumprod)*cfg_noise_est) / sqrt(alpha_cumprod)
+                pred_prev_image = ((sqrt(alpha_cumprod_prev)*beta)/(1-alpha_cumprod))*clean_t_step 
+                                    + ((sqrt(alpha)*(1-alpha_cumprod_prev))/(1-alpha_cumprod))*image
+                                    + add_variance(...)
 
-                                cfg_noise_est_1 = uncond_noise_est_1 + scale*(noise_est_1 - uncond_noise_est_1)
-                                cfg_noise_est_1 = TF.gaussian_blur(cfg_noise_est_1, kernel_size=33, sigma=2)
-
-                                model_output_2 = stage_1.unet(
-                                    image.half().to(device),
-                                    t,
-                                    encoder_hidden_states=prompt_embeds_2,
-                                    return_dict=False
-                                )[0]
-
-                                uncond_model_output_2 = stage_1.unet(
-                                    image.half().to(device),
-                                    t,
-                                    encoder_hidden_states=uncond_prompt_embeds_2,
-                                    return_dict=False
-                                )[0]
-
-                                noise_est_2, _ = torch.split(model_output_2, image.shape[1], dim=1)
-                                uncond_noise_est_2, _ = torch.split(uncond_model_output_2, image.shape[1], dim=1)
-
-                                cfg_noise_est_2 = uncond_noise_est_2 + scale*(noise_est_2 - uncond_noise_est_2)
-                                cfg_noise_est_2 = cfg_noise_est_2 - TF.gaussian_blur(cfg_noise_est_2, kernel_size=33, sigma=2)
-
-
-                                cfg_noise_est = cfg_noise_est_1 + cfg_noise_est_2
-
-                                clean_t_step = (image - torch.sqrt(1-alpha_cumprod)*cfg_noise_est) / torch.sqrt(alpha_cumprod)
-                                pred_prev_image = ((torch.sqrt(alpha_cumprod_prev)*beta)/(1-alpha_cumprod))*clean_t_step 
-                                                    + ((torch.sqrt(alpha)*(1-alpha_cumprod_prev))/(1-alpha_cumprod))*image
-                                pred_prev_image = add_variance(predicted_variance.to('cpu'), 
-                                                               torch.tensor([t]), 
-                                                               pred_prev_image.to('cpu'))
-
-                                image = pred_prev_image.half().to(device)
-
-                            clean = image.cpu().detach().numpy()
-
-                        return clean
+                image = pred_prev_image
                     </code></pre>
                     <p>Here are the generated hybrid images:</p>
                     <div class="image-gallery">
@@ -988,6 +872,310 @@
                         <div class="gallery-item">
                             <img src="images/skeleton.png" alt="" style="width: 60%;"/>
                             <p class="caption">Hybrid images of a guitar and an oil painting of a skeleton smoking a cigarette</p>
+                        </div>
+                    </div>
+                </section>
+            </section>
+            <section id="part-b">
+                <h1>Part B: Flow Matching from Scratch!</h1>
+            </section>
+            <section id="part-b-one">
+                <h2>Part 1: Training a Single-Step Denoising UNet</h2> 
+                <section id="part-b-one-one">
+                    <h3>1.1 Implementing the UNet</h3>
+                    <p>Given a noisy image \(z\), we aim to train a denoiser \(D_\theta\) such that it maps \(z\) to a clean image \(x\). This is optimized over an L2 loss:</p>
+                    <div style="text-align: center;">
+                        <p>
+                            \(\begin{align} 
+                                L = \mathbb{E}_{z,x} \|D_{\theta}(z) - x\|^2
+                            \end{align}\)
+                        </p>
+                    </div>
+                    <p>Following the PyTorch neural network framework structure, I implemented a simple one-step denoiser as an unconditional UNet. This is the architecture of the network:</p>
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/unconditional_arch.png" alt=""/>
+                            <p class="caption">Unconditional UNet</p>
+                        </div>
+                    </div>
+                    <p>The network uses a number of standard tensor operations defined as follows:</p>
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/atomic_ops_new.png" alt=""/>
+                            <p class="caption">Standard UNet Operations</p>
+                        </div>
+                    </div>
+                    <p>These operations were implemented using the functions of the <code>torch.nn</code> module, i.e., <code>nn.Sequential()</code>, <code>nn.Conv2d()</code>, <code>nn.BatchNorm2d()</code>, <code>nn.GELU()</code> <code>nn.ConvTranspose2d()</code>, and <code>nn.AvgPool2d</code>.
+                    The <code>Concat</code> operation is simply <code>torch.cat()</code> along the channel dimension. The unconditional UNet then used these implemented operations, as I implemented the <code>forward()</code> function that follows the diagram of the network.</p>
+                </section>
+                <section id="part-b-one-two">
+                    <h3>1.2 Using the UNet to Train a Denoiser</h3>
+                    <p>To train the denoiser on the MNIST dataset (<code>torchvision.datatsets.MNIST</code>), we need to generate training data pairs of \((z, x)\). For each training batch, we generate noisy image \(z\) from clean MNIST digit \(x\) using the following noising process:</p>
+                    <div style="text-align: center;">
+                        <p>
+                            \(\begin{align} 
+                                z = x + \sigma \epsilon,\quad \text{where }\epsilon \sim N(0, I)
+                            \end{align}\)
+                        </p>
+                    </div>
+                    <p>This is defined in Python as a <code>nn.Module</code> class called <code>NoisingProcess</code>, where its <code>forward()</code> function follows the above process.
+                    Here is a visualization of the noising process over \(\sigma = [0.0, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0]\), assuming normalized \(x \in [0,1]\):</p>
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/noising_process.png" alt=""/>
+                        </div>
+                    </div>
+                    <p>Observe that the images become noiser as \(\sigma\) increases, which makes sense as it increases the effect of additive noise \(\epsilon\).</p>
+                    <section>
+                        <h4>1.2.1 Training</h4>
+                        <p>Now, I will train the denoiser (unconditional UNet) with hidden dimension \(128\) on the MNIST training set with batch size of 256 over 5 epochs to denoise noisy image \(z\) with noise level \(\sigma = 0.5\) applied to a clean image \(x\). I will use the Adam optimizer with a learning rate of <code>1e-4</code>.
+                        This was the training loss curve plot during the whole training process of \(\sigma = 0.5\):</p>
+                        <div class="image-gallery">
+                            <div class="gallery-item">
+                                <img src="images/training_loss_uncond_unet.png" alt="" style="width: 50%;"/>
+                            </div>
+                        </div>
+                        <p>Here are the denoised results on the test set at the 1st and 5th (last) epochs:</p>
+                        <div class="image-gallery">
+                            <div class="gallery-item">
+                                <img src="images/uncond_unet_epoch1.png" alt=""/>
+                                <p class="caption">Results after epoch 1</p>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="images/uncond_unet_epoch5.png" alt=""/>
+                                <p class="caption">Results after epoch 5</p>
+                            </div>
+                        </div>
+                    </section>
+                    <section>
+                        <h4>1.2.2 Out-of-Distribution Testing</h4>
+                        <p>Let's see how the denoiser performs on different \(\sigma\)'s that it wasn't trained for. Here are the results on test set digits with varying noise levels \(\sigma = [0.0, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0]\):</p>
+                        <div class="image-gallery">
+                            <div class="gallery-item">
+                                <img src="images/ood-part0.png" alt="" style="width: 35%;"/>
+                                <p class="caption">UNet \(\sigma\) was trained on</p>
+                            </div>
+                        </div>
+                        <div class="image-gallery">
+                            <div class="gallery-item">
+                                <img src="images/ood-part1.png" alt="" style="width: 65%;"/>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="images/ood-part2.png" alt="" style="width: 65%;"/>
+                            </div>
+                        </div>
+                    </section>
+                    <section>
+                        <h4>1.2.3 Denoising Pure Noise</h4>
+                        <p>To make denoising a generative task, ideally we would like to be able to denoise pure, random Gaussian noise (\(z = \epsilon\)) into a clean digit. Now, I trained a separate unconditional UNet to denoise pure noise by inputting pure noise and computing the loss against the MNIST training set.
+                        This was the training loss curve plot during the whole training process of \(\sigma = 0.5\):</p>
+                        <div class="image-gallery">
+                            <div class="gallery-item">
+                                <img src="images/training_loss_pure_noise.png" alt="" style="width: 50%;"/>
+                            </div>
+                        </div>
+                        <p>Here are the denoised results on the test set at the 1st and 5th (last) epochs:</p>
+                        <div class="image-gallery">
+                            <div class="gallery-item">
+                                <img src="images/pure_noise_epoch1.png" alt="" style="width: 65%;"/>
+                                <p class="caption">Results after epoch 1</p>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="images/pure_noise_epoch5.png" alt="" style="width: 65%;"/>
+                                <p class="caption">Results after epoch 5</p>
+                            </div>
+                        </div>
+                        <p>The results resemble a blurry average of all MNIST digits, with the number \(3\) appearing most prominent. This makes sense because this denoiser learns to map pure Gaussian noise, containing no structure, to the mean of the training data.
+                        Since the denoiser model is optimized using the MSE loss (minimizes the sum of squared distances to all MNIST training examples), the network converges to output the pixelwise average of the dataset. As a result, the final output looks like an indistinct "average digit" rather than any specific number.</p>
+                    </section>
+                </section>
+            </section>
+            <section id="part-b-two">
+                <h2>Part 2: Training a Flow Matching Model</h2> 
+                <p>I will now implement a flow matching model that iteratively denoises an image, which will work better for generative tasks than the one-step denoising model implemented in Part B.1. Here, I will iteratively denoise an image by training a UNet model to predict the flow/velocity from our noisy data to clean data.</p>
+                <p>In this setup, we sample a pure noise image \(x_0 \sim N(0,I)\) and generate a realistic image \(x_1\) from the MNIST dataset. Then, we define a noising process to generate intermediate noisy images \(x_t\) for \(t \in [0,1]\) (or, a vector field that describes the position of a point \(x_t\) at time \(t\) relative to the clean data distribution \(p_1(x_1)\) and noisy data distribution \(p_0(x_0)\)) using linear interpolation:</p>
+                <div style="text-align: center;">
+                    <p>
+                        \(\begin{align} 
+                            x_t = (1-t)x_0 + tx_1 \quad \text{where } x_0 \sim \mathcal{N}(0, 1), t \in [0, 1]
+                        \end{align}\)
+                    </p>
+                </div>
+                <p>Flow can be thought of as the velocity (change in position w.r.t. time) of this vector field, describing how to move from \(x_0\) to \(x_1\):</p>
+                <div style="text-align: center;">
+                    <p>
+                        \(\begin{align} 
+                            u(x_t, t) = \frac{d}{dt} x_t = x_1 - x_0
+                        \end{align}\)
+                    </p>
+                </div>
+                <p>Then, the goal is to learn a UNet \(u_\theta(x_t, t)\) that approximates this flow \(u(x_t, t) = x_1 - x_0\), i.e., to minimize:</p>
+                <div style="text-align: center;">
+                    <p>
+                        \(\begin{align} 
+                            L = \mathbb{E}_{x_0 \sim p_0(x_0), x_1 \sim p_1(x_1), t \sim U[0, 1]} \|(x_1-x_0) - u_\theta(x_t, t)\|^2
+                        \end{align}\)
+                    </p>
+                </div>
+                <section id="part-b-two-one">
+                    <h3>2.1 Adding Time Conditioning to UNet</h3>
+                    <p>Following the PyTorch neural network framework structure, I implemented a time-conditioned UNet. It has the same structure as in Part B.1.1, but now injects scalar \(t\) into the network after the <code>Unflatten</code> and first <code>UpBlock</code> layers. This is the architecture of the network:</p>
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/conditional_arch_fm.png" alt=""/>
+                            <p class="caption">Time-Conditioned UNet</p>
+                        </div>
+                    </div>
+                    <p>This uses a new operator called <code>FCBlock</code> (fully-connected block) that uses <code>nn.Linear()</code>, which is used to inject the conditioning singal into the UNet:</p>
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/fc_long.png" alt=""/>
+                            <p class="caption">FCBlock for conditioning</p>
+                        </div>
+                    </div>
+                    <p>The time-conditioned UNet uses this operation in the forward process as shown in the diagram, which looks like this:</p>
+                    <pre style="width: 50%"><code>
+                    t1 = self.fc1_t(t)
+                    t2 = self.fc2_t(t)    
+                    ...
+                    x_unflatten = x_unflatten * t1
+                    ...
+                    x_up1 = x_up1 * t2
+                    ...
+                    return x_out
+                    </code></pre>
+                </section>
+                <section id="part-b-two-two">
+                    <h3>2.2 Training the Time-conditioned UNet</h3>
+                    <p>To train the flow matching UNet model, I implemented the forward process (Algorithm 1) for time-conditioned denoising:</p>
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/algo1_t_only_fm.png" alt="" style="width: 75%"/>
+                            <p class="caption">Training time-conditioned UNet</p>
+                        </div>
+                    </div>
+                    <p>I trained the time-conditioned UNet \(u_\theta(x_t, t)\) with hidden dimension \(64\) on the MNIST training set with batch size of 64 over 10 epochs to predict the flow/velocity at \(x_t\) given a noisy image \(x_t\) and a timestep \(t\) (for 50 timesteps). 
+                    I will use the Adam optimizer with an initial learning rate of <code>1e-2</code>, and an exponential learning rate decay scheduler with a gamma of \(0.1^{1.0/\text{num_epochs}}\) using <code>torch.optim.lr_scheduler.ExponentialLR()</code>.
+                    This was the training loss curve plot over the whole training process:</p>
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/training_loss_time_cond_unet.png" alt="" style="width: 50%;"/>
+                        </div>
+                    </div>
+                </section>
+                <section id="part-b-two-three">
+                    <h3>2.3 Sampling from the Time-conditioned UNet</h3>
+                    <p>I also implemented the reverse process (Algorithm 2):</p>
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/algo2_t_only_fm.png" alt="" style="width: 75%"/>
+                            <p class="caption">Sampling from time-conditioned UNet</p>
+                        </div>
+                    </div>
+                    <p>Here are the denoised results from the time-conditioned UNet for the 1st, 5th, and 10th (last) epochs:</p>
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/time_cond_unet_epoch1.png" alt=""/>
+                            <p class="caption">Results after epoch 1</p>
+                        </div>
+                    </div>
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/time_cond_unet_epoch5.png" alt=""/>
+                            <p class="caption">Results after epoch 5</p>
+                        </div>
+                    </div>
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/time_cond_unet_epoch10.png" alt=""/>
+                            <p class="caption">Results after epoch 10</p>
+                        </div>
+                    </div>
+                </section>
+                <section id="part-b-two-four">
+                    <h3>2.4 Adding Class Conditioning to UNet</h3>
+                    <p>To improve upon the previous results and give us more control for image generation, we can optionally condition the UNet on the 0-9 digit classes in addition to the time conditioning.
+                    Using the same implementation and architecture as in Part B.2.1, I modified the UNet to also inject class conditioning after the <code>Unflatten</code> and first <code>UpBlock</code> layers by adding 2 more <code>FCBlock</code>s that input a one-hot class-conditioning vector \(c\). Here is kind of how I implemented the class-conditioning in the forward process:</p>
+                    <pre style="width: 50%"><code>
+                    c = torch.nn.functional.one_hot(c, num_classes)
+                    c1 = self.fc1_c(c)
+                    c2 = self.fc2_c(c)
+
+                    t1 = self.fc1_t(t)
+                    t2 = self.fc2_t(t)    
+                    ...
+                    x_unflatten = x_unflatten * t1 + c1
+                    ...
+                    x_up1 = x_up1 * t2 + c2
+                    ...
+                    return x_out
+                    </code></pre>
+                </section>
+                <section id="part-b-two-five">
+                    <h3>2.5 Training the Class-conditioned UNet</h3>
+                    <p>Because we still want our UNet to work without it being conditioned on any class, we implement dropout where \(10\%\) of the time (\(p_{\text{uncond}}=0.1\) we set the class conditioning vector \(c\) to \(0\). 
+                    Training will be the same as the time-only algorithm, with the only difference is incorporating the conditioning vector \(c\) and doing unconditional generation periodically.
+                    Here is the I implemented the described forward process (Algorithm 3) that I implemented:</p>
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/algo3_c_fm.png" alt="" style="width: 75%"/>
+                            <p class="caption">Training class-conditioned UNet</p>
+                        </div>
+                    </div>
+                    <p>I trained the class-conditioned UNet \(u_\theta(x_t, t, c)\) with hidden dimension \(64\) on the MNIST training set with batch size of 64 over 10 epochs to predict the flow/velocity at \(x_t\) given a noisy image \(x_t\), timestep \(t\) (for 300 timesteps) and class-conditioning vector \(c\). 
+                    I will use the Adam optimizer with an initial learning rate of <code>1e-2</code>, and an exponential learning rate decay scheduler with a gamma of \(0.1^{1.0/\text{num_epochs}}\)..
+                    This was the training loss curve plot over the whole training process:</p>
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/training_loss_class_cond_unet.png" alt="" style="width: 50%;"/>
+                        </div>
+                    </div>
+                </section>
+                <section id="part-b-two-six">
+                    <h3>2.6 Sampling from the Class-conditioned UNet</h3>
+                    <p>I then implemented the reverse process (Algorithm 4) that incorporates classifier-free guidance with \(\gamma = 5.0\):</p>
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/algo4_c_fm.png" alt="" style="width: 75%"/>
+                            <p class="caption">Sampling from class-conditioned UNet</p>
+                        </div>
+                    </div>
+                    <p>Here are the denoised results from the classed-conditioned UNet for the 1st, 5th, and 10th (last) epochs:</p>
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/class_cond_unet_epoch1.png" alt=""/>
+                            <p class="caption">Results after epoch 1</p>
+                        </div>
+                    </div>
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/class_cond_unet_epoch5.png" alt=""/>
+                            <p class="caption">Results after epoch 5</p>
+                        </div>
+                    </div>
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/class_cond_unet_epoch10.png" alt=""/>
+                            <p class="caption">Results after epoch 10</p>
+                        </div>
+                    </div>
+                    <p>I then removed the learning rate scheduler for simplicity. To componensate for the loss of the scheduler, I decreased the learning rate of the Adam optimizer to 3e-3. Here are the results without a learning rate scheduler:</p>
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/no_scheduler_epoch1.png" alt=""/>
+                            <p class="caption">Results after epoch 1</p>
+                        </div>
+                    </div>
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/no_scheduler_epoch5.png" alt=""/>
+                            <p class="caption">Results after epoch 5</p>
+                        </div>
+                    </div>
+                    <div class="image-gallery">
+                        <div class="gallery-item">
+                            <img src="images/no_scheduler_epoch10.png" alt=""/>
+                            <p class="caption">Results after epoch 10</p>
                         </div>
                     </div>
                 </section>
