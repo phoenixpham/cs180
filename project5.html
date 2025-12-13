@@ -89,7 +89,7 @@
                     <li>"A high quality picture"</li>
                     <li>“An oil painting of a skeleton smoking a cigarette”</li>
                     <li>“A photo of the Lake Lugano”</li>
-                    <li>“A photo of Sisyphus pushing up a boulder up a hill”</li>
+                    <li>“A photo of Sisyphus pushing a boulder up a hill”</li>
                     <li>“A photo of a monkey playing poker”</li>
                     <li>“A sky view of San Francisco”</li>
                     <li>“An oil painting of a goat”</li>
@@ -103,12 +103,12 @@
                     <li>""</li>
                 </ul>
                 <p>The "A high quality picture" and "" prompts used later for unconditional generation.</p>
-                <p><strong>Note:</strong> I will be using set random seed \(100\) for all the results.</p>
+                <p><strong>Note:</strong> I will be using a set random seed \(100\) for all the results.</p>
                 <h4><code style="font-size: 1.2em;">num_inference_steps=20</code></h4>
                 <div class="image-gallery">
                     <div class="gallery-item">
                         <img src="images/sisyphus_inference_steps_20.png" alt=""/>
-                        <p class="caption">A photo of Sisyphus pushing up a boulder up a hill</p>
+                        <p class="caption">A photo of Sisyphus pushing a boulder up a hill</p>
                     </div>
                     <div class="gallery-item">
                         <img src="images/monkey_inference_steps_20.png" alt=""/>
@@ -123,7 +123,7 @@
                 <div class="image-gallery">
                     <div class="gallery-item">
                         <img src="images/sisyphus_inference_steps_100.png" alt=""/>
-                        <p class="caption">A photo of Sisyphus pushing up a boulder up a hill</p>
+                        <p class="caption">A photo of Sisyphus pushing a boulder up a hill</p>
                     </div>
                     <div class="gallery-item">
                         <img src="images/monkey_inference_steps_100.png" alt=""/>
@@ -839,7 +839,7 @@
                 </section>
                 <section id="part-a-one-nine">
                     <h3>1.9 Hybrid Images</h3>
-                    <p>In this part, I will implement <a href="https://dangeng.github.io/factorized_diffusion/" target="_blank" rel="noopener noreferrer">Factorized Diffusion</a>. Similar to Part 1.8, I will create a composite noise estimate \(\epsilon\) by estimating the noise with two different text prompts, and then combining low frequencies from one noise estimate with high frequencies of the other. I will use <code>torchvision.transforms.functional.gaussian_blur</code> with kernel size \(33\) and \(\sigma=2\) to get the low and high frequencies. Here is a snippet of what the <code>make_hybrids</code> function that does this:</p>
+                    <p>In this part, I will implement <a href="https://dangeng.github.io/factorized_diffusion/" target="_blank" rel="noopener noreferrer">Factorized Diffusion</a>. Similar to Part 1.8, I will create a compensate noise estimate \(\epsilon\) by estimating the noise with two different text prompts, and then combining low frequencies from one noise estimate with high frequencies of the other. I will use <code>torchvision.transforms.functional.gaussian_blur</code> with kernel size \(33\) and \(\sigma=2\) to get the low and high frequencies. Here is a snippet of what the <code>make_hybrids</code> function that does this:</p>
                     <pre class="code-small" style="width: 50%"><code>
             for i in range(i_start, len(timesteps) - 1):
                 ...
@@ -910,7 +910,7 @@
                 </section>
                 <section id="part-b-one-two">
                     <h3>1.2 Using the UNet to Train a Denoiser</h3>
-                    <p>To train the denoiser on the MNIST dataset (<code>torchvision.datatsets.MNIST</code>), we need to generate training data pairs of \((z, x)\). For each training batch, we generate noisy image \(z\) from clean MNIST digit \(x\) using the following noising process:</p>
+                    <p>To train the denoiser on the MNIST dataset (<code>torchvision.datasets.MNIST</code>), we need to generate training data pairs of \((z, x)\). For each training batch, we generate noisy image \(z\) from clean MNIST digit \(x\) using the following noising process:</p>
                     <div style="text-align: center;">
                         <p>
                             \(\begin{align} 
@@ -1026,7 +1026,7 @@
                             <p class="caption">Time-Conditioned UNet</p>
                         </div>
                     </div>
-                    <p>This uses a new operator called <code>FCBlock</code> (fully-connected block) that uses <code>nn.Linear()</code>, which is used to inject the conditioning singal into the UNet:</p>
+                    <p>This uses a new operator called <code>FCBlock</code> (fully-connected block) that uses <code>nn.Linear()</code>, which is used to inject the conditioning signal into the UNet:</p>
                     <div class="image-gallery">
                         <div class="gallery-item">
                             <img src="images/fc_long.png" alt=""/>
@@ -1115,7 +1115,7 @@
                     <h3>2.5 Training the Class-conditioned UNet</h3>
                     <p>Because we still want our UNet to work without it being conditioned on any class, we implement dropout where \(10\%\) of the time (\(p_{\text{uncond}}=0.1\) we set the class conditioning vector \(c\) to \(0\). 
                     Training will be the same as the time-only algorithm, with the only difference is incorporating the conditioning vector \(c\) and doing unconditional generation periodically.
-                    Here is the I implemented the described forward process (Algorithm 3) that I implemented:</p>
+                    Here is the described forward process (Algorithm 3) that I implemented:</p>
                     <div class="image-gallery">
                         <div class="gallery-item">
                             <img src="images/algo3_c_fm.png" alt="" style="width: 75%"/>
@@ -1123,7 +1123,7 @@
                         </div>
                     </div>
                     <p>I trained the class-conditioned UNet \(u_\theta(x_t, t, c)\) with hidden dimension \(64\) on the MNIST training set with batch size of 64 over 10 epochs to predict the flow/velocity at \(x_t\) given a noisy image \(x_t\), timestep \(t\) (for 300 timesteps) and class-conditioning vector \(c\). 
-                    I will use the Adam optimizer with an initial learning rate of <code>1e-2</code>, and an exponential learning rate decay scheduler with a gamma of \(0.1^{1.0/\text{num_epochs}}\)..
+                    I will use the Adam optimizer with an initial learning rate of <code>1e-2</code>, and an exponential learning rate decay scheduler with a gamma of \(0.1^{1.0/\text{num_epochs}}\).
                     This was the training loss curve plot over the whole training process:</p>
                     <div class="image-gallery">
                         <div class="gallery-item">
