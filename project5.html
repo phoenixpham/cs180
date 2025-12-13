@@ -157,7 +157,7 @@
                             <p class="caption">Original</p>
                         </div>
                     </div>
-                    <div class="image-gallery four-wide">
+                    <div class="image-gallery">
                         <div class="gallery-item">
                             <img src="images/campanile_noisy250.png" alt="" style="width: 75%;"/>
                             <p class="caption">Noisy Campanile at \(t=250\)</p>
@@ -214,9 +214,9 @@
                             <p class="caption">Original</p>
                         </div>
                     </div>
-                    <div class="image-gallery four-wide">
+                    <div class="image-gallery">
                         <div class="gallery-item">
-                            <img src="images/campanile_noisy250.png" alt="" style="width: 70%;"/>
+                            <img src="images/campanile_noisy250.png" alt="" style="width: 75%;"/>
                             <p class="caption">Noisy Campanile at \(t=250\)</p>
                         </div>
                         <div class="gallery-item">
@@ -228,7 +228,7 @@
                             <p class="caption">Noisy Campanile at \(t=750\)</p>
                         </div>
                     </div> 
-                    <div class="image-gallery four-wide">
+                    <div class="image-gallery">
                         <div class="gallery-item">
                             <img src="images/campanile_denoised250.png" alt="" style="width: 75%;"/>
                             <p class="caption">One-Step Denoised Campanile at \(t=250\)</p>
@@ -263,7 +263,7 @@
                         <li>\(x_0\) is our current estimate of the clean image</li>
                     </ul>
                     <p>This is a snippet of what <code>iterative_denoise</code> loop looks like:</p>
-                    <pre style="width: 50%"><code>
+                    <pre class="code-small" style="width: 50%"><code>
             for i in range(i_start, len(timesteps) - 1):
                 ...
 
@@ -357,7 +357,7 @@
                     </div>
                     <p>where \(\gamma\) controls the strength of CFG (I used \(\gamma=7\)). To get an unconditional noise estimate, we can just pass an empty prompt embedding of <code>""</code> to the diffusion model. 
                     Here is a snippet of my implementation of <code>iterative_denoise_cfg</code>, which is almost identical to <code>iterative_denoise</code>:</p>
-                    <pre style="width: 50%"><code>
+                    <pre class="code-small" style="width: 50%"><code>
             for i in range(i_start, len(timesteps) - 1):
                 ...
 
@@ -607,7 +607,7 @@
                             </p>
                         </div>
                         <p>Here is a snippet of the <code>inpaint</code> function that does this procedure, which is the same as <code>iterative_denoise_cfg</code>, except it denoises a random noise image and does the inpainting step at the end of the iterative loop:</p>
-                        <pre style="width: 50%"><code>
+                        <pre class="code-small" style="width: 50%"><code>
             image = torch.randn_like(original_image)
 
             for i in range(10, len(timesteps) - 1):
@@ -624,9 +624,9 @@
                         </code></pre>
                         <p>Here are the inpainted results:</p>
                         <h5>Campanile</h5>
-                        <div class="image-gallery four-wide">
+                        <div class="image-gallery">
                             <div class="gallery-item">
-                                <img src="images/campanile.png" alt="" style="width: 70%;"/>
+                                <img src="images/campanile.png" alt="" style="width: 75%;"/>
                                 <p class="caption">Campanile</p>
                             </div>
                             <div class="gallery-item">
@@ -645,9 +645,9 @@
                             </div>
                         </div>
                         <h5>Replacing a subject</h5>
-                        <div class="image-gallery four-wide">
+                        <div class="image-gallery">
                             <div class="gallery-item">
-                                <img src="images/curious_test.png" alt="" style="width: 70%;"/>
+                                <img src="images/curious_test.png" alt="" style="width: 75%;"/>
                             </div>
                             <div class="gallery-item">
                                 <img src="images/curious_mask.png" alt="" style="width: 75%;"/>
@@ -665,9 +665,9 @@
                             </div>
                         </div>
                         <h5>Erase people in the background</h5>
-                        <div class="image-gallery four-wide">
+                        <div class="image-gallery">
                             <div class="gallery-item">
-                                <img src="images/honor.png" alt="" style="width: 70%;"/>
+                                <img src="images/honor.png" alt="" style="width: 75%;"/>
                             </div>
                             <div class="gallery-item">
                                 <img src="images/honor_mask.png" alt="" style="width: 75%;"/>
@@ -690,7 +690,7 @@
                         <p>Now, I will do the same thing as in 1.7 and 1.7.1, but guide the projection with a text prompt:</p>
                         <div class="image-gallery">
                             <div class="gallery-item">
-                                <img src="images/campanile.png" alt="" style="width: 15%;"/>
+                                <img src="images/campanile.png" alt="" style="width: 16%;"/>
                                 <p class="caption">Campanile</p>
                             </div>
                         </div>
@@ -722,7 +722,7 @@
                         </div> 
                         <div class="image-gallery">
                             <div class="gallery-item">
-                                <img src="images/diamond.png" alt="" style="width: 15%;"/>
+                                <img src="images/diamond.png" alt="" style="width: 16%;"/>
                                 <p class="caption">Diamond</p>
                             </div>
                         </div>
@@ -754,7 +754,7 @@
                         </div> 
                         <div class="image-gallery">
                             <div class="gallery-item">
-                                <img src="images/penguin.png" alt="" style="width: 15%;"/>
+                                <img src="images/penguin.png" alt="" style="width: 16%;"/>
                                 <p class="caption">Penguin sketch</p>
                             </div>
                         </div>
@@ -791,7 +791,7 @@
                     <p>Now, I will create <a href="https://dangeng.github.io/visual_anagrams/" target="_blank" rel="noopener noreferrer">Visual Anagrams</a> with diffusion models, specifically images that look like one prompt, but another prompt flipped upside down.</p>
                     <p>To do so, I will denoise an image \(x_t\) at step \(t\) normally with the prompt \(p_1\), to obtain noise estimate \(\epsilon_1\). But at the same time, flip \(x_t\) upside down, and denoise with the prompt \(p_2\) to get noise estimate \(\epsilon_2\). Then, I flip \(\epsilon_2\) back, and average the two noise estimates. After, perform a reverse diffusion step with the averaged noise estimate. 
                     This is a snippet of what <code>make_flip_illusion</code> looks like:</p>
-                    <pre style="width: 50%"><code>
+                    <pre class="code-small" style="width: 50%"><code>
             for i in range(i_start, len(timesteps) - 1):
                 ...
 
@@ -840,7 +840,7 @@
                 <section id="part-a-one-nine">
                     <h3>1.9 Hybrid Images</h3>
                     <p>In this part, I will implement <a href="https://dangeng.github.io/factorized_diffusion/" target="_blank" rel="noopener noreferrer">Factorized Diffusion</a>. Similar to Part 1.8, I will create a composite noise estimate \(\epsilon\) by estimating the noise with two different text prompts, and then combining low frequencies from one noise estimate with high frequencies of the other. I will use <code>torchvision.transforms.functional.gaussian_blur</code> with kernel size \(33\) and \(\sigma=2\) to get the low and high frequencies. Here is a snippet of what the <code>make_hybrids</code> function that does this:</p>
-                    <pre style="width: 50%"><code>
+                    <pre class="code-small" style="width: 50%"><code>
             for i in range(i_start, len(timesteps) - 1):
                 ...
 
@@ -870,7 +870,7 @@
                             <p class="caption">Hybrid images of an UFO and Lake Lugano</p>
                         </div>
                         <div class="gallery-item">
-                            <img src="images/skeleton.png" alt="" style="width: 60%;"/>
+                            <img src="images/skeleton.png" alt="" class="print-small" style="width: 60%;"/>
                             <p class="caption">Hybrid images of a guitar and an oil painting of a skeleton smoking a cigarette</p>
                         </div>
                     </div>
@@ -952,7 +952,7 @@
                         <p>Let's see how the denoiser performs on different \(\sigma\)'s that it wasn't trained for. Here are the results on test set digits with varying noise levels \(\sigma = [0.0, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0]\):</p>
                         <div class="image-gallery">
                             <div class="gallery-item">
-                                <img src="images/ood-part0.png" alt="" style="width: 35%;"/>
+                                <img src="images/ood-part0.png" alt="" class="print-large" style="width: 35%;"/>
                                 <p class="caption">UNet \(\sigma\) was trained on</p>
                             </div>
                         </div>
@@ -1034,7 +1034,7 @@
                         </div>
                     </div>
                     <p>The time-conditioned UNet uses this operation in the forward process as shown in the diagram, which looks like this:</p>
-                    <pre style="width: 50%"><code>
+                    <pre class="code-small" style="width: 50%"><code>
                     t1 = self.fc1_t(t)
                     t2 = self.fc2_t(t)    
                     ...
@@ -1096,7 +1096,7 @@
                     <h3>2.4 Adding Class Conditioning to UNet</h3>
                     <p>To improve upon the previous results and give us more control for image generation, we can optionally condition the UNet on the 0-9 digit classes in addition to the time conditioning.
                     Using the same implementation and architecture as in Part B.2.1, I modified the UNet to also inject class conditioning after the <code>Unflatten</code> and first <code>UpBlock</code> layers by adding 2 more <code>FCBlock</code>s that input a one-hot class-conditioning vector \(c\). Here is kind of how I implemented the class-conditioning in the forward process:</p>
-                    <pre style="width: 50%"><code>
+                    <pre class="code-small" style="width: 50%"><code>
                     c = torch.nn.functional.one_hot(c, num_classes)
                     c1 = self.fc1_c(c)
                     c2 = self.fc2_c(c)
